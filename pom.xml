@@ -22,6 +22,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+<!--    модули-->
     <modules>
         <module>stats-dto</module>
         <module>stats-service</module>
