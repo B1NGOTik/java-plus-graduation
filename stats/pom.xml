@@ -9,7 +9,14 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>stats-service</artifactId>
+    <artifactId>stats</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>stats-dto</module>
+        <module>stats-service</module>
+        <module>stats-client</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
