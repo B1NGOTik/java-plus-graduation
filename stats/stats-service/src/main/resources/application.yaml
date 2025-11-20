@@ -1,0 +1,21 @@
+server:
+  port: 9090
+client:
+  url: http://localhost:9090
+spring:
+  output:
+    ansi:
+      enabled: always
+  sql:
+    init:
+      mode: always
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/stat
+    username: stat
+    password: stat
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
