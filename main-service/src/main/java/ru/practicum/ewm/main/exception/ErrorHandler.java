@@ -16,6 +16,12 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError conflictHandler(ConflictException e) {
+        return new ApiError(HttpStatus.CONFLICT, "Integrity constraint has been violated.", e.getMessage(), LocalDateTime.now());
+    }
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError otherHandler(RuntimeException e) {
         return new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal error", e.getMessage(), LocalDateTime.now());

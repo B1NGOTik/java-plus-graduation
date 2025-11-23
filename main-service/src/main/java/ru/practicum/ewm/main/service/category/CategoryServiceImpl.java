@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.mapper.category.CategoryDtoMapper;
 import ru.practicum.ewm.main.mapper.category.NewCategoryDtoMapper;
@@ -24,7 +25,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto addCategory(NewCategoryDto newCategory) {
-        return CategoryDtoMapper.toDto(categoryRepository.save(NewCategoryDtoMapper.toModel(newCategory)));
+        if (categoryRepository.existsByName(newCategory.getName().trim())) {
+            throw new ConflictException(
+                    "Категория с именем '" + newCategory.getName() + "' уже существует"
+            );
+        }
+        return CategoryDtoMapper.toDto(
+                categoryRepository.save(NewCategoryDtoMapper.toModel(newCategory))
+        );
     }
 
     @Override
@@ -34,8 +42,19 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto updateCategory(Long categoryId, NewCategoryDto updateCategory) {
-        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new NotFoundException("Категория не найдена"));
-        category.setName(updateCategory.getName());
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new NotFoundException("Категория не найдена"));
+        String newName = updateCategory.getName().trim();
+        String currentName = category.getName();
+        if (!currentName.equals(newName)) {
+            if (categoryRepository.existsByName(newName)) {
+                throw new ConflictException(
+                        "Категория с именем '" + newName + "' уже существует"
+                );
+            }
+            category.setName(newName);
+        }
+
         return CategoryDtoMapper.toDto(categoryRepository.save(category));
     }
 

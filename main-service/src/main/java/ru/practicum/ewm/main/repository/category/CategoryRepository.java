@@ -10,4 +10,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     @Query(value = "SELECT * FROM categories ORDER BY id LIMIT ?2 OFFSET ?1",
             nativeQuery = true)
     List<Category> findCategoriesWithParameters(Long from, Long size);
+
+    boolean existsByName(String name);
 }
