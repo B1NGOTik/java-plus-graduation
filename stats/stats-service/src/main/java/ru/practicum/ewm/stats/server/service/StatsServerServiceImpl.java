@@ -20,8 +20,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class StatsServerServiceImpl implements StatsServerService {
-    private final StatsServerRepository statRepository;
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final StatsServerRepository statRepository;
 
     public EndpointHitDto saveHit(EndpointHitDto newHit) {
         return HitDtoMapper.toDto(statRepository.save(HitDtoMapper.toModel(newHit)));
