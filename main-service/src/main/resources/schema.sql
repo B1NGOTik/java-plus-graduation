@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS events(
     views BIGINT DEFAULT 0,
 
     CONSTRAINT fk_events_categories
-        FOREIGN KEY(category_id) REFERENCES categories(id),
+        FOREIGN KEY(category_id) REFERENCES categories(id)
+        ON DELETE RESTRICT,
     CONSTRAINT fk_events_users
         FOREIGN KEY(initiator_id) REFERENCES users(id),
     CONSTRAINT fk_events_locations
