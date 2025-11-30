@@ -23,7 +23,6 @@ CREATE TABLE IF NOT EXISTS events(
     initiator_id BIGINT NOT NULL,
     category_id BIGINT NOT NULL,
     location_id BIGINT NOT NULL,
-    confirmed_requests BIGINT NOT NULL DEFAULT 0,
     created_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     published_on TIMESTAMP WITHOUT TIME ZONE,
     event_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
@@ -31,7 +30,6 @@ CREATE TABLE IF NOT EXISTS events(
     participant_limit BIGINT NOT NULL DEFAULT 0,
     request_moderation BOOLEAN DEFAULT true,
     state TEXT NOT NULL,
-    views BIGINT DEFAULT 0,
 
     CONSTRAINT fk_events_categories
         FOREIGN KEY(category_id) REFERENCES categories(id)

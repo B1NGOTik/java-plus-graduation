@@ -140,6 +140,22 @@
             <version>1.5.5.Final</version>
             <scope>provided</scope>
         </dependency>
+        <!-- QueryDSL JPA (Jakarta) -->
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-jpa</artifactId>
+            <version>5.1.0</version>
+            <classifier>jakarta</classifier>
+        </dependency>
+
+        <!-- Annotation processor (Jakarta) -->
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-apt</artifactId>
+            <version>5.1.0</version>
+            <scope>provided</scope>
+            <classifier>jakarta</classifier>
+        </dependency>
     </dependencies>
 
     <build>
@@ -162,6 +178,20 @@
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
                             <version>1.5.5.Final</version>
+                        </path>
+
+                        <!-- QueryDSL -->
+                        <path>
+                            <groupId>com.querydsl</groupId>
+                            <artifactId>querydsl-apt</artifactId>
+                            <version>5.1.0</version>
+                            <classifier>jakarta</classifier>
+                        </path>
+
+                        <path>
+                            <groupId>jakarta.persistence</groupId>
+                            <artifactId>jakarta.persistence-api</artifactId>
+                            <version>3.1.0</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
