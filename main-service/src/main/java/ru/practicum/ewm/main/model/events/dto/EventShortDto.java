@@ -2,6 +2,7 @@ package ru.practicum.ewm.main.model.events.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import ru.practicum.ewm.main.model.category.CategoryDto;
+import ru.practicum.ewm.main.model.user.UserShortDto;
 
 import java.time.LocalDateTime;
 
@@ -10,7 +11,7 @@ public record EventShortDto(
         String title,
         String annotation,
         CategoryDto category,
-        String categoryName,
+        UserShortDto initiator,
         Boolean paid,
 
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

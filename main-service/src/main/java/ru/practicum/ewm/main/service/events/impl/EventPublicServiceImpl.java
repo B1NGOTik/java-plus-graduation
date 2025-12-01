@@ -68,7 +68,7 @@ public class EventPublicServiceImpl implements EventPublicService {
                             dto.title(),
                             dto.annotation(),
                             dto.category(),
-                            dto.categoryName(),
+                            dto.initiator(),
                             dto.paid(),
                             dto.eventDate(),
                             views,
@@ -137,6 +137,10 @@ public class EventPublicServiceImpl implements EventPublicService {
                 LocalDateTime.now().format(FORMATTER)
         );
         log.info("Отправляем хит в stats-сервис: {}", hit);
+        try {
         statsClient.saveHit(hit);
+        } catch (Exception e) {
+            log.error("Не удалось отправить хит в stats-сервис: {}", e.getMessage(), e);
+        }
     }
 }

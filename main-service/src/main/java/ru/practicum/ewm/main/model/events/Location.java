@@ -1,9 +1,6 @@
 package ru.practicum.ewm.main.model.events;
 
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,10 +11,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "location")
+@Table(name = "locations")
 public class Location {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private Double lat;

@@ -41,7 +41,7 @@ public class Events {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;
 

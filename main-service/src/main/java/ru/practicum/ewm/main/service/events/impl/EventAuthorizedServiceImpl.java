@@ -1,5 +1,6 @@
 package ru.practicum.ewm.main.service.events.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -8,7 +9,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.mapper.events.EventsMapper;
+import ru.practicum.ewm.main.mapper.events.LocationMapper;
+import ru.practicum.ewm.main.model.category.Category;
 import ru.practicum.ewm.main.model.events.Events;
+import ru.practicum.ewm.main.model.events.Location;
 import ru.practicum.ewm.main.model.events.dto.EventFullDto;
 import ru.practicum.ewm.main.model.events.dto.EventShortDto;
 import ru.practicum.ewm.main.model.events.dto.NewEventDto;
@@ -16,8 +20,10 @@ import ru.practicum.ewm.main.model.events.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.main.model.events.enums.EventState;
 import ru.practicum.ewm.main.model.user.User;
 import ru.practicum.ewm.main.repository.events.EventsRepository;
-import ru.practicum.ewm.main.repository.user.UserRepository;
+import ru.practicum.ewm.main.repository.locations.LocationRepository;
+import ru.practicum.ewm.main.service.category.CategoryService;
 import ru.practicum.ewm.main.service.events.EventAuthorizedService;
+import ru.practicum.ewm.main.service.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,7 +36,10 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
 
     private final EventsMapper mapper;
     private final EventsRepository eventsRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final LocationRepository locationRepository;
+    private final LocationMapper locationMapper;
+    private final CategoryService categoryService;
 
     @Override
     public List<EventShortDto> getUserEvents(Long userId, Integer from, Integer size) {
@@ -44,26 +53,33 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
         log.info("Создание события: userId={}, payload={}", userId, newEventDto);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("Пользователь с id={} не найден при создании события", userId);
-                    return new NotFoundException("User with id=" + userId + " not found");
-                });
+        User user = userService.findUserById(userId);
+
+        Category category = categoryService.findCategoryEntityById(newEventDto.getCategory());
+
+        Location location = locationMapper.toEntity(newEventDto.getLocation());
+        location = locationRepository.save(location);
+        log.debug("Сохранена локация id={}, lat={}, lon={}",
+                location.getId(), location.getLat(), location.getLon());
 
         Events events = mapper.toEntity(newEventDto);
 
         events.setInitiator(user);
+        events.setCategory(category);
+        events.setLocation(location);
         events.setState(EventState.PENDING);
         events.setCreatedOn(LocalDateTime.now());
         log.info(
-                "Готовим событие к сохранению: userId={}, title='{}', eventDate={}, categoryId={}, paid={}, participantLimit={}",
+                "Готовим событие к сохранению: userId={}, title='{}', eventDate={}, categoryId={}, locationId={}, paid={}, participantLimit={}",
                 userId,
                 events.getTitle(),
                 events.getEventDate(),
                 events.getCategory() != null ? events.getCategory().getId() : null,
+                events.getLocation() != null ? events.getLocation().getId() : null,
                 events.getPaid(),
                 events.getParticipantLimit()
         );
@@ -72,15 +88,12 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
         return mapper.toFullDto(saved);
     }
 
-
+    @Transactional
     @Override
     public EventFullDto updateUserEvent(Long userId, Long eventId, UpdateEventUserRequest updateRequest) {
         log.info("Обновление события eventId={} пользователем userId={}, body={}", eventId, userId, updateRequest);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("Пользователь с id={} не найден при создании события", userId);
-                    return new NotFoundException("User with id=" + userId + " not found");
-                });
+        User user = userService.findUserById(userId);
+
         Events event = eventsRepository.findById(eventId)
                 .orElseThrow(() -> {
                     log.warn("Событие с id={} не найдено при обновлении пользователем id={}", eventId, userId);
@@ -97,6 +110,18 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
 
         mapper.updateEventFromUserRequest(updateRequest, event);
 
+        if (updateRequest.getCategory() != null) {
+            Category newCategory = categoryService.findCategoryEntityById(updateRequest.getCategory());
+            event.setCategory(newCategory);
+        }
+
+        if (updateRequest.getLocation() != null) {
+            Location newLocation = locationMapper.toEntity(updateRequest.getLocation());
+            newLocation = locationRepository.save(newLocation);
+            log.debug("Обновлена локация для события eventId={}: locationId={}, lat={}, lon={}",
+                    eventId, newLocation.getId(), newLocation.getLat(), newLocation.getLon());
+            event.setLocation(newLocation);
+        }
         Events saved = eventsRepository.save(event);
         return mapper.toFullDto(saved);
     }
