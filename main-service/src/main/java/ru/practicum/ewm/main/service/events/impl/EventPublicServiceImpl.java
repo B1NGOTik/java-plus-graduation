@@ -41,6 +41,7 @@ public class EventPublicServiceImpl implements EventPublicService {
 
     public List<EventShortDto> getEvents(PublicEventSearchParams params,
                                          HttpServletRequest request) {
+        log.info("Поиск публичных событий params={}", params);
         saveHit(request);
 
         Pageable pageable = PageRequest.of(params.getFrom() / params.getSize(), params.getSize());
@@ -62,6 +63,7 @@ public class EventPublicServiceImpl implements EventPublicService {
                     // базовый DTO от MapStruct
                     EventShortDto dto = eventsMapper.toShortDto(e);
                     String uri = "/events/" + e.getId();
+
                     long views = viewsByUri.getOrDefault(uri, 0L);
                     return new EventShortDto(
                             dto.id(),
@@ -138,7 +140,7 @@ public class EventPublicServiceImpl implements EventPublicService {
         );
         log.info("Отправляем хит в stats-сервис: {}", hit);
         try {
-        statsClient.saveHit(hit);
+            statsClient.saveHit(hit);
         } catch (Exception e) {
             log.error("Не удалось отправить хит в stats-сервис: {}", e.getMessage(), e);
         }

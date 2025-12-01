@@ -1,6 +1,7 @@
 package ru.practicum.ewm.main.controller.events;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class EventsPublicController {
     private final EventPublicServiceImpl eventPublicService;
 
     @GetMapping
-    public List<EventShortDto> getEvents(@ModelAttribute PublicEventSearchParams params,
+    public List<EventShortDto> getEvents(@ModelAttribute @Valid PublicEventSearchParams params,
                                          HttpServletRequest request) {
         log.info("GET /events params={}", params);
         return eventPublicService.getEvents(params, request);
