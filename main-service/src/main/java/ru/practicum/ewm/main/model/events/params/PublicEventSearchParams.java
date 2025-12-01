@@ -19,8 +19,10 @@ public class PublicEventSearchParams {
     private String text;
     private List<Long> categories;
     private Boolean paid;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime rangeStart;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime rangeEnd;
     private Boolean onlyAvailable;

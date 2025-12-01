@@ -1,12 +1,8 @@
 package ru.practicum.ewm.main.mapper.events;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
+import org.mapstruct.*;
 import ru.practicum.ewm.main.model.events.Events;
-import ru.practicum.ewm.main.model.events.dto.EventFullDto;
-import ru.practicum.ewm.main.model.events.dto.EventShortDto;
-import ru.practicum.ewm.main.model.events.dto.NewEventDto;
+import ru.practicum.ewm.main.model.events.dto.*;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface EventsMapper {
@@ -25,9 +21,38 @@ public interface EventsMapper {
     @Mapping(target = "confirmedRequests", ignore = true)
     EventFullDto toFullDto(Events event);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "location", ignore = true)
     @Mapping(target = "initiator", ignore = true)
     @Mapping(target = "state", ignore = true)
+    @Mapping(target = "createdOn", ignore = true)
+    @Mapping(target = "publishedOn", ignore = true)
     Events toEntity(NewEventDto dto);
+
+    @Mapping(target = "category", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "initiator", ignore = true)
+    @Mapping(target = "createdOn", ignore = true)
+    @Mapping(target = "publishedOn", ignore = true)
+    @Mapping(target = "state", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEventFromUserRequest(
+            UpdateEventUserRequest source,
+            @MappingTarget Events target
+    );
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "category", ignore = true)
+    @Mapping(target = "location", ignore = true)
+    @Mapping(target = "initiator", ignore = true)
+    @Mapping(target = "createdOn", ignore = true)
+    @Mapping(target = "publishedOn", ignore = true)
+    @Mapping(target = "state", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEventFromAdminRequest(
+            UpdateEventAdminRequest source,
+            @MappingTarget Events target
+    );
+
 }

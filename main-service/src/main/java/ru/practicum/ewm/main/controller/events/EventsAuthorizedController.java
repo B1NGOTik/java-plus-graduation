@@ -45,5 +45,11 @@ public class EventsAuthorizedController {
         return eventService.updateUserEvent(userId, eventId, updateRequest);
     }
 
-
+    @GetMapping("/{eventId}")
+    public EventFullDto getUserEvent(@PathVariable Long userId,
+                                     @PathVariable Long eventId
+    ) {
+        log.info("GET /users/{}/events/{}", userId, eventId);
+        return eventService.getUserEvent(userId, eventId);
+    }
 }

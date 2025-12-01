@@ -13,14 +13,18 @@ import ru.practicum.ewm.main.mapper.events.EventsMapper;
 import ru.practicum.ewm.main.model.events.Events;
 import ru.practicum.ewm.main.model.events.dto.EventFullDto;
 import ru.practicum.ewm.main.model.events.dto.EventShortDto;
+import ru.practicum.ewm.main.model.events.enums.EventState;
 import ru.practicum.ewm.main.model.events.params.PublicEventSearchParams;
 import ru.practicum.ewm.main.repository.events.EventsRepository;
 import ru.practicum.ewm.main.service.events.EventPublicService;
 import ru.practicum.ewm.stats.dto.EndpointHitDto;
+import ru.practicum.ewm.stats.dto.ViewStatsDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -38,23 +42,88 @@ public class EventPublicServiceImpl implements EventPublicService {
     public List<EventShortDto> getEvents(PublicEventSearchParams params,
                                          HttpServletRequest request) {
         saveHit(request);
-        Pageable pageable = PageRequest.of(params.getFrom() / params.getSize(), params.getSize());
 
+        Pageable pageable = PageRequest.of(params.getFrom() / params.getSize(), params.getSize());
         Page<Events> page = eventsRepository.findPublicEvents(params, pageable);
 
+        List<Events> events = page.getContent();
+        if (events.isEmpty()) {
+            return List.of();
+        }
 
-        return page.getContent().stream()
-                .map(eventsMapper::toShortDto)
+        List<String> uris = events.stream()
+                .map(e -> "/events/" + e.getId())
+                .toList();
+        Map<String, Long> viewsByUri = getViewsForUris(uris);
+
+
+        return events.stream()
+                .map(e -> {
+                    // базовый DTO от MapStruct
+                    EventShortDto dto = eventsMapper.toShortDto(e);
+                    String uri = "/events/" + e.getId();
+                    long views = viewsByUri.getOrDefault(uri, 0L);
+                    return new EventShortDto(
+                            dto.id(),
+                            dto.title(),
+                            dto.annotation(),
+                            dto.category(),
+                            dto.categoryName(),
+                            dto.paid(),
+                            dto.eventDate(),
+                            views,
+                            dto.confirmedRequests()
+                    );
+                })
                 .toList();
     }
+
 
     @Override
     public EventFullDto getById(Long eventId, HttpServletRequest request) {
         saveHit(request);
-        Events events = eventsRepository.findById(eventId)
+        Events events = eventsRepository.findByIdAndState(eventId, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
 
-        return eventsMapper.toFullDto(events);
+        String uri = request.getRequestURI();
+        long views = getViewsForUris(List.of(uri)).getOrDefault(uri, 0L);
+
+        EventFullDto dto = eventsMapper.toFullDto(events);
+        EventFullDto enriched = new EventFullDto(
+                dto.annotation(),
+                dto.category(),
+                dto.confirmedRequests(),
+                dto.createdOn(),
+                dto.description(),
+                dto.eventDate(),
+                dto.id(),
+                dto.initiator(),
+                dto.location(),
+                dto.paid(),
+                dto.participantLimit(),
+                dto.publishedOn(),
+                dto.requestModeration(),
+                dto.state(),
+                dto.title(),
+                views
+        );
+
+        return enriched;
+    }
+
+    private Map<String, Long> getViewsForUris(List<String> uris) {
+        String start = "2000-01-01 00:00:00";
+        String end = LocalDateTime.now().format(FORMATTER);
+
+        log.info("Запрашиваем статистику: start={}, end={}, uris={}", start, end, uris);
+
+        List<ViewStatsDto> stats = statsClient.getStats(start, end, uris, true);
+
+        Map<String, Long> result = new HashMap<>();
+        for (ViewStatsDto stat : stats) {
+            result.put(stat.getUri(), stat.getHits());
+        }
+        return result;
     }
 
 

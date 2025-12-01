@@ -31,7 +31,6 @@ public class AdminEventSearchParams {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime rangeEnd;
 
-
     @PositiveOrZero
     private Integer from = 0;
 

@@ -3,10 +3,17 @@ package ru.practicum.ewm.main.model.events.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import lombok.*;
+import ru.practicum.ewm.main.model.events.enums.StateActionAdminUpdateEvent;
 import ru.practicum.ewm.main.model.events.enums.StateActionUserUpdateEvent;
 
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class UpdateEventAdminRequest {
     @Size(min = 20, max = 2000)
     private String annotation;
@@ -28,7 +35,7 @@ public class UpdateEventAdminRequest {
 
     private Boolean requestModeration;
 
-    private StateActionUserUpdateEvent stateAction;
+    private StateActionAdminUpdateEvent stateAction;
 
     @Size(min = 3, max = 120)
     private String title;

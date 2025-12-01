@@ -15,5 +15,6 @@ public interface EventAuthorizedService {
 
     EventFullDto updateUserEvent(Long userId, Long eventId, UpdateEventUserRequest updateRequest);
 
+    EventFullDto getUserEvent(Long userId, Long eventId);
 
 }

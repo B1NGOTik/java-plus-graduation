@@ -7,6 +7,7 @@ import ru.practicum.ewm.main.model.user.UserShortDto;
 
 import java.time.LocalDateTime;
 
+
 public record EventFullDto(
 
         String annotation,              // краткое описание

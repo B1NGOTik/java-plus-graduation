@@ -17,10 +17,10 @@ import java.util.List;
 @Slf4j
 public class EventsAdminController {
 
-    private EventsAdminService eventsAdminService;
+    private final EventsAdminService eventsAdminService;
 
     @GetMapping
-    public List<EventFullDto> getEvents(@Valid AdminEventSearchParams params) {
+    public List<EventFullDto> getEvents(@Valid @ModelAttribute AdminEventSearchParams params) {
         log.info("GET /admin/events params={}", params);
         return eventsAdminService.getEvents(params);
     }

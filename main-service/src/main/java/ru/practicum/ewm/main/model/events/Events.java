@@ -1,6 +1,8 @@
 package ru.practicum.ewm.main.model.events;
 
 import jakarta.persistence.*;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,7 +41,8 @@ public class Events {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Embedded
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "location_id", nullable = false)
     private Location location;
 
     @Column(name = "created_on", nullable = false)
