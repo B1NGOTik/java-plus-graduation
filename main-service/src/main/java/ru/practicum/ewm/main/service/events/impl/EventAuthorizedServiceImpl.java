@@ -23,6 +23,7 @@ import ru.practicum.ewm.main.repository.events.EventsRepository;
 import ru.practicum.ewm.main.repository.locations.LocationRepository;
 import ru.practicum.ewm.main.service.category.CategoryService;
 import ru.practicum.ewm.main.service.events.EventAuthorizedService;
+import ru.practicum.ewm.main.service.location.LocationService;
 import ru.practicum.ewm.main.service.user.UserService;
 
 import java.time.LocalDateTime;
@@ -37,8 +38,7 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
     private final EventsMapper mapper;
     private final EventsRepository eventsRepository;
     private final UserService userService;
-    private final LocationRepository locationRepository;
-    private final LocationMapper locationMapper;
+    private final LocationService locationService;
     private final CategoryService categoryService;
 
     @Override
@@ -61,8 +61,7 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
 
         Category category = categoryService.findCategoryEntityById(newEventDto.getCategory());
 
-        Location location = locationMapper.toEntity(newEventDto.getLocation());
-        location = locationRepository.save(location);
+        Location location = locationService.saveLocation(newEventDto.getLocation());
         log.debug("Сохранена локация id={}, lat={}, lon={}",
                 location.getId(), location.getLat(), location.getLon());
 
@@ -116,8 +115,7 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
         }
 
         if (updateRequest.getLocation() != null) {
-            Location newLocation = locationMapper.toEntity(updateRequest.getLocation());
-            newLocation = locationRepository.save(newLocation);
+            Location newLocation = locationService.saveLocation(updateRequest.getLocation());
             log.debug("Обновлена локация для события eventId={}: locationId={}, lat={}, lon={}",
                     eventId, newLocation.getId(), newLocation.getLat(), newLocation.getLon());
             event.setLocation(newLocation);
