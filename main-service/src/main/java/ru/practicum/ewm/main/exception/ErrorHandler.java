@@ -32,6 +32,16 @@ public class ErrorHandler {
         return new ApiError(HttpStatus.CONFLICT, "Integrity constraint has been violated.", e.getMessage(), LocalDateTime.now());
     }
 
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError validationHandler(ValidationException e,HttpServletRequest request) {
+        log.warn("400 BAD REQUEST: {} {} -> {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                e.getMessage());
+        return new ApiError(HttpStatus.CONFLICT, "Incorrectly made request.", e.getMessage(), LocalDateTime.now());
+    }
+
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError otherHandler(RuntimeException e,HttpServletRequest request) {

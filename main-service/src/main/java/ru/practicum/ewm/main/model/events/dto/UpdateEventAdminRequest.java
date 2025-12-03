@@ -5,7 +5,6 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import ru.practicum.ewm.main.model.events.enums.StateActionAdminUpdateEvent;
-import ru.practicum.ewm.main.model.events.enums.StateActionUserUpdateEvent;
 
 import java.time.LocalDateTime;
 
