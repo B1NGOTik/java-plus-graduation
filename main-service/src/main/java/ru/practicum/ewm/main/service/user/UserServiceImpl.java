@@ -1,9 +1,11 @@
 package ru.practicum.ewm.main.service.user;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.mapper.user.UserMapper;
 import ru.practicum.ewm.main.model.user.NewUserRequest;
 import ru.practicum.ewm.main.model.user.User;
@@ -12,6 +14,7 @@ import ru.practicum.ewm.main.repository.user.UserRepository;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -21,6 +24,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(NewUserRequest newUser) {
+        log.info("Создание пользователя: name={}, email={}",
+                newUser.getName(), newUser.getEmail());
+        if (userRepository.existsByEmail(newUser.getEmail())) {
+            log.warn("Попытка создания пользователя с уже занятым email={}",
+                    newUser.getEmail());
+            throw new ConflictException(
+                    String.format("User with email=%s already exists", newUser.getEmail())
+            );
+        }
         User user = userMapper.toModel(newUser);
         User save = userRepository.save(user);
 
