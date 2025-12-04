@@ -19,13 +19,13 @@ public class StatsServerController {
     private final StatsServerService statService;
 
     @PostMapping("/hit")
-    ResponseEntity<String> saveHit(@RequestBody EndpointHitDto hitDto) {
+    public ResponseEntity<String> saveHit(@RequestBody EndpointHitDto hitDto) {
         EndpointHitDto savedHit = statService.saveHit(hitDto);
         return ResponseEntity.status(HttpStatus.CREATED).body("Информация сохранена");
     }
 
     @GetMapping("/stats")
-    ResponseEntity<List<ViewStatsDto>> getStats(@RequestParam @NotNull String start,
+    public ResponseEntity<List<ViewStatsDto>> getStats(@RequestParam @NotNull String start,
                                                 @RequestParam @NotNull String end,
                                                 @RequestParam(required = false) List<String> uris,
                                                 @RequestParam(defaultValue = "false") Boolean unique) {

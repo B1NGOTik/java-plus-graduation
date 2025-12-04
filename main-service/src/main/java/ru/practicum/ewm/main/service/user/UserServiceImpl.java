@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.mapper.user.UserMapper;
 import ru.practicum.ewm.main.model.user.NewUserRequest;
@@ -58,5 +59,16 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(userMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    public User findUserById(Long userId) {
+
+        return userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("Пользователь с id={} не найден при создании события", userId);
+                    return new NotFoundException("User with id=" + userId + " not found");
+                });
+
     }
 }
