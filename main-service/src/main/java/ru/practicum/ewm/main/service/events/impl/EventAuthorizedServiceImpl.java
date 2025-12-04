@@ -107,6 +107,17 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
             throw new IllegalStateException("Cannot update published event");
         }
 
+        if (updateRequest.getEventDate() != null) {
+            LocalDateTime newDate = updateRequest.getEventDate();
+            if (newDate.isBefore(LocalDateTime.now().plusHours(2))) {
+                log.warn("Нарушено ограничение по дате при обновлении события id={}, userId={}, newDate={}",
+                        eventId, userId, newDate);
+                throw new IllegalStateException(
+                        "Field: eventDate. Error: должно содержать дату, которая еще не наступила."
+                );
+            }
+        }
+
         mapper.updateEventFromUserRequest(updateRequest, event);
 
         if (updateRequest.getCategory() != null) {
@@ -120,7 +131,22 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
                     eventId, newLocation.getId(), newLocation.getLat(), newLocation.getLon());
             event.setLocation(newLocation);
         }
+
+        if (updateRequest.getStateAction() != null) {
+            switch (updateRequest.getStateAction()) {
+                case SEND_TO_REVIEW -> {
+                    event.setState(EventState.PENDING);
+                    log.info("Событие id={} отправлено на модерацию пользователем id={}", eventId, userId);
+                }
+                case CANCEL_REVIEW -> {
+                    event.setState(EventState.CANCELED);
+                    log.info("Событие id={} отменено пользователем id={}", eventId, userId);
+                }
+            }
+        }
         Events saved = eventsRepository.save(event);
+        log.info("Событие id={} успешно обновлено пользователем id={}, новое состояние={}",
+                saved.getId(), userId, saved.getState());
         return mapper.toFullDto(saved);
     }
 
