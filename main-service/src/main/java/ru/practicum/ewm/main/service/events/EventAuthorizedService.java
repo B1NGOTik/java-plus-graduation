@@ -4,6 +4,7 @@ import ru.practicum.ewm.main.model.events.dto.EventFullDto;
 import ru.practicum.ewm.main.model.events.dto.EventShortDto;
 import ru.practicum.ewm.main.model.events.dto.NewEventDto;
 import ru.practicum.ewm.main.model.events.dto.UpdateEventUserRequest;
+import ru.practicum.ewm.main.model.request.ParticipationRequestDto;
 
 import java.util.List;
 
@@ -17,4 +18,5 @@ public interface EventAuthorizedService {
 
     EventFullDto getUserEvent(Long userId, Long eventId);
 
+    List<ParticipationRequestDto> findEventRequests(Long userId, Long eventId);
 }

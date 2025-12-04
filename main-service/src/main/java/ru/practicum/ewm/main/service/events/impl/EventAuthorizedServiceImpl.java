@@ -18,11 +18,13 @@ import ru.practicum.ewm.main.model.events.dto.EventShortDto;
 import ru.practicum.ewm.main.model.events.dto.NewEventDto;
 import ru.practicum.ewm.main.model.events.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.main.model.events.enums.EventState;
+import ru.practicum.ewm.main.model.request.ParticipationRequestDto;
 import ru.practicum.ewm.main.model.user.User;
 import ru.practicum.ewm.main.repository.events.EventsRepository;
 import ru.practicum.ewm.main.repository.locations.LocationRepository;
 import ru.practicum.ewm.main.service.category.CategoryService;
 import ru.practicum.ewm.main.service.events.EventAuthorizedService;
+import ru.practicum.ewm.main.service.request.ParticipationRequestService;
 import ru.practicum.ewm.main.service.location.LocationService;
 import ru.practicum.ewm.main.service.user.UserService;
 
@@ -40,6 +42,7 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
     private final UserService userService;
     private final LocationService locationService;
     private final CategoryService categoryService;
+    private final ParticipationRequestService requestService;
 
     @Override
     public List<EventShortDto> getUserEvents(Long userId, Integer from, Integer size) {
@@ -138,5 +141,13 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
         }
 
         return mapper.toFullDto(event);
+    }
+
+    @Override
+    public List<ParticipationRequestDto> findEventRequests(Long userId, Long eventId) {
+        log.info("Получение запросов на участие в событии eventId={} пользователя userId={}", eventId, userId);
+
+        EventFullDto event = getUserEvent(userId, eventId);
+        return requestService.findEventRequests(userId, eventId);
     }
 }
