@@ -15,7 +15,9 @@ import ru.practicum.ewm.main.repository.request.ParticipationRequestRepository;
 import ru.practicum.ewm.main.service.user.UserService;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -62,7 +64,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
                 .status(ParticipationRequestStatus.PENDING)
                 .build();
 
-        if (!event.getRequestModeration()) {
+        if (!event.getRequestModeration() || event.getParticipantLimit().equals(0)) {
             newRequest.setStatus(ParticipationRequestStatus.CONFIRMED);
         }
 
@@ -102,5 +104,23 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         List<ParticipationRequest> result = requestRepository.findByEventId(eventId);
 
         return result.stream().map(ParticipationRequestMapper::toDto).toList();
+    }
+
+    @Override
+    public Integer findConfirmedRequestsCount(Long eventId) {
+        Events event = eventsRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("не найдено событие с id " + eventId));
+
+        return requestRepository.findConfirmedRequestsCount(eventId);
+    }
+
+    @Override
+    public Map<Long, Long> countConfirmedRequestsByEventIds(List<Long> eventIds) {
+        List<Object[]> counts = requestRepository.countRequestsByEventIds(eventIds);
+        Map<Long, Long> result = new HashMap<>();
+        for (Object[] o: counts) {
+            result.put((Long)o[0], (Long)o[1]);
+        }
+        return result;
     }
 }
