@@ -11,7 +11,6 @@ import lombok.*;
 @Table(name = "users")
 @Builder
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,4 +21,3 @@ public class User {
     @Column(nullable = false, unique = true, length = 254)
     private String email;
 }
-
