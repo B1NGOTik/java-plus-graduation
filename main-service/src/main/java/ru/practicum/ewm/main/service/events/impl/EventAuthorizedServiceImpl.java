@@ -7,9 +7,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.mapper.events.EventsMapper;
-import ru.practicum.ewm.main.mapper.events.LocationMapper;
 import ru.practicum.ewm.main.model.category.Category;
 import ru.practicum.ewm.main.model.events.Events;
 import ru.practicum.ewm.main.model.events.Location;
@@ -18,14 +18,16 @@ import ru.practicum.ewm.main.model.events.dto.EventShortDto;
 import ru.practicum.ewm.main.model.events.dto.NewEventDto;
 import ru.practicum.ewm.main.model.events.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.main.model.events.enums.EventState;
-import ru.practicum.ewm.main.model.request.ParticipationRequestDto;
+import ru.practicum.ewm.main.model.request.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.ewm.main.model.request.dto.EventRequestStatusUpdateResult;
+import ru.practicum.ewm.main.model.request.dto.ParticipationRequestDto;
 import ru.practicum.ewm.main.model.user.User;
 import ru.practicum.ewm.main.repository.events.EventsRepository;
-import ru.practicum.ewm.main.repository.locations.LocationRepository;
 import ru.practicum.ewm.main.service.category.CategoryService;
 import ru.practicum.ewm.main.service.events.EventAuthorizedService;
-import ru.practicum.ewm.main.service.request.ParticipationRequestService;
 import ru.practicum.ewm.main.service.location.LocationService;
+import ru.practicum.ewm.main.service.request.ParticipationRequestService;
+import ru.practicum.ewm.main.service.request.ParticipationRequestValidator;
 import ru.practicum.ewm.main.service.user.UserService;
 
 import java.time.LocalDateTime;
@@ -43,6 +45,8 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
     private final LocationService locationService;
     private final CategoryService categoryService;
     private final ParticipationRequestService requestService;
+    private final ParticipationRequestValidator participationRequestValidator;
+
 
     @Override
     public List<EventShortDto> getUserEvents(Long userId, Integer from, Integer size) {
@@ -96,18 +100,22 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
         log.info("Обновление события eventId={} пользователем userId={}, body={}", eventId, userId, updateRequest);
         User user = userService.findUserById(userId);
 
-        Events event = eventsRepository.findById(eventId)
-                .orElseThrow(() -> {
-                    log.warn("Событие с id={} не найдено при обновлении пользователем id={}", eventId, userId);
-                    return new NotFoundException("Event with id=" + eventId + " not found");
-                });
-
-        if (!event.getInitiator().getId().equals(userId)) {
-            throw new IllegalStateException("User " + userId + " is not initiator of event " + eventId);
-        }
+        Events event = checkEvent(eventId);
+        checkInitiator(userId, eventId, event);
 
         if (event.getState() == EventState.PUBLISHED) {
-            throw new IllegalStateException("Cannot update published event");
+            throw new ConflictException("Не удается обновить опубликованное событие,уже PUBLISHED");
+        }
+
+        if (updateRequest.getEventDate() != null) {
+            LocalDateTime newDate = updateRequest.getEventDate();
+            if (newDate.isBefore(LocalDateTime.now().plusHours(2))) {
+                log.warn("Нарушено ограничение по дате при обновлении события id={}, userId={}, newDate={}",
+                        eventId, userId, newDate);
+                throw new ConflictException(
+                        "Field: eventDate. Error: должно содержать дату, которая еще не наступила."
+                );
+            }
         }
 
         mapper.updateEventFromUserRequest(updateRequest, event);
@@ -123,22 +131,32 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
                     eventId, newLocation.getId(), newLocation.getLat(), newLocation.getLon());
             event.setLocation(newLocation);
         }
+
+        if (updateRequest.getStateAction() != null) {
+            switch (updateRequest.getStateAction()) {
+                case SEND_TO_REVIEW -> {
+                    event.setState(EventState.PENDING);
+                    log.info("Событие id={} отправлено на модерацию пользователем id={}", eventId, userId);
+                }
+                case CANCEL_REVIEW -> {
+                    event.setState(EventState.CANCELED);
+                    log.info("Событие id={} отменено пользователем id={}", eventId, userId);
+                }
+            }
+        }
         Events saved = eventsRepository.save(event);
+        log.info("Событие id={} успешно обновлено пользователем id={}, новое состояние={}",
+                saved.getId(), userId, saved.getState());
         return mapper.toFullDto(saved);
     }
+
 
     @Override
     public EventFullDto getUserEvent(Long userId, Long eventId) {
         log.info("Получение события eventId={} пользователем userId={}", eventId, userId);
 
-        Events event = eventsRepository.findById(eventId)
-                .orElseThrow(() -> {
-                    log.warn("Событие с id={} не найдено", eventId);
-                    return new NotFoundException("Event with id=" + eventId + " not found");
-                });
-        if (!event.getInitiator().getId().equals(userId)) {
-            throw new IllegalStateException("User " + userId + " is not initiator of event " + eventId);
-        }
+        Events event = checkEvent(eventId);
+        checkInitiator(userId, eventId, event);
 
         return mapper.toFullDto(event);
     }
@@ -146,8 +164,51 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
     @Override
     public List<ParticipationRequestDto> findEventRequests(Long userId, Long eventId) {
         log.info("Получение запросов на участие в событии eventId={} пользователя userId={}", eventId, userId);
-
-        EventFullDto event = getUserEvent(userId, eventId);
+        User user = userService.findUserById(userId);
+        participationRequestValidator.checkEventForInitiator(
+                eventsRepository,
+                userId,
+                eventId
+        );
         return requestService.findEventRequests(userId, eventId);
     }
+
+    @Override
+    public EventRequestStatusUpdateResult rejectingRequest(Long userId, Long eventId, EventRequestStatusUpdateRequest updateRequest) {
+        log.info("Изменение статуса заявок на участие: userId={}, eventId={}, body={}",
+                userId, eventId, updateRequest);
+
+        userService.findUserById(userId);
+        participationRequestValidator.checkEventForInitiator(
+                eventsRepository,
+                userId,
+                eventId
+        );
+
+        return requestService.changeRequestStatus(userId, eventId, updateRequest);
+    }
+
+
+    private Events checkEvent(Long eventId) {
+        return eventsRepository.findById(eventId)
+                .orElseThrow(() -> {
+                    log.warn("Событие с id={} не найдено", eventId);
+                    return new NotFoundException("Event with id=" + eventId + " not found");
+                });
+    }
+
+    private static void checkInitiator(Long userId, Long eventId, Events event) {
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new ConflictException("User " + userId + " is not initiator of event " + eventId);
+        }
+    }
+
+//    private void validateRequestIdsNotEmpty(List<Long> requestIds, Long eventId) {
+//        if (requestIds == null || requestIds.isEmpty()) {
+//            log.warn("Пустой список requestIds при изменении статуса заявок для eventId={}", eventId);
+//            throw new ConflictException("RequestIds must not be empty");
+//        }
+//    }
+
+
 }

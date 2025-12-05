@@ -19,7 +19,8 @@ import ru.practicum.ewm.main.repository.compilation.CompilationEventRepository;
 import ru.practicum.ewm.main.repository.compilation.CompilationRepository;
 import ru.practicum.ewm.main.repository.events.EventsRepository;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +33,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional
     public CompilationDto save(NewCompilationDto newDto) {
-        List<Events> events = eventsRepository.findByIds(List.copyOf(newDto.getEvents()));
+        List<Events> events = eventsRepository.findByIdIn(List.copyOf(newDto.getEvents()));
         if (newDto.getEvents().size() != events.size()) {
             throw new NotFoundException("Найдены не все события, добавляемые в подборку");
         }
@@ -68,13 +69,13 @@ public class CompilationServiceImpl implements CompilationService {
 
         List<Events> events;
         if (updateDto.getEvents() != null) {
-            events = eventsRepository.findByIds(List.copyOf(updateDto.getEvents()));
+            events = eventsRepository.findByIdIn(List.copyOf(updateDto.getEvents()));
             if (updateDto.getEvents().size() != events.size()) {
                 throw new NotFoundException("Найдены не все события, добавляемые в подборку");
             }
             //TODO добавить запрос к views и confirmed requests
         } else {
-            events = eventsRepository.findByIds(compilationEventRepository.findEventIdsByCompilationId(compId));
+            events = eventsRepository.findByIdIn(compilationEventRepository.findEventIdsByCompilationId(compId));
         }
 
         try {
@@ -102,7 +103,7 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("не найдена подборка с id " + compId));
 
-        List<Events> events = eventsRepository.findByIds(compilationEventRepository.findEventIdsByCompilationId(compId));
+        List<Events> events = eventsRepository.findByIdIn(compilationEventRepository.findEventIdsByCompilationId(compId));
         return CompilationMapper.toDto(compilation,
                 events.stream().map(eventsMapper::toShortDto).toList());
     }
@@ -123,9 +124,9 @@ public class CompilationServiceImpl implements CompilationService {
 
         List<CompilationDto> result = new ArrayList<>();
 
-        for (Compilation c: compilations) {
+        for (Compilation c : compilations) {
             List<Events> events1 = new ArrayList<>();
-            for (CompilationEvent ce: compilationEvents) {
+            for (CompilationEvent ce : compilationEvents) {
                 if (c.getId().equals(ce.getCompilation().getId())) {
                     events1.add(ce.getEvent());
                 }

@@ -1,16 +1,17 @@
-package ru.practicum.ewm.main.model.request;
+package ru.practicum.ewm.main.model.request.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
-
-@Data
-@Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+
 public class ParticipationRequestDto {
     Long id;
     @JsonFormat(shape = JsonFormat.Shape.STRING,
