@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.main.enums.ParticipationRequestStatus;
 import ru.practicum.ewm.main.exception.NotFoundException;
+import ru.practicum.ewm.main.exception.ValidationException;
 import ru.practicum.ewm.main.mapper.events.EventsMapper;
 import ru.practicum.ewm.main.model.category.Category;
 import ru.practicum.ewm.main.model.events.Events;
@@ -59,6 +60,17 @@ public class EventsAdminServiceImpl implements EventsAdminService {
                 });
 
         mapper.updateEventFromAdminRequest(updateRequest, event);
+
+        if (updateRequest.getEventDate() != null) {
+            LocalDateTime newDate = updateRequest.getEventDate();
+            if (newDate.isBefore(LocalDateTime.now().plusHours(2))) {
+                log.warn("Нарушено ограничение по дате при обновлении события id={}, newDate={}",
+                        eventId, newDate);
+                throw new ValidationException(
+                        "Field: eventDate. Error: должно содержать дату, которая еще не наступила."
+                );
+            }
+        }
 
         if (updateRequest.getCategory() != null) {
             Category category = categoryRepository.findById(updateRequest.getCategory())
