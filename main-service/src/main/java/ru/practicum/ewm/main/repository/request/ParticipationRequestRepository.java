@@ -2,6 +2,7 @@ package ru.practicum.ewm.main.repository.request;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import ru.practicum.ewm.main.enums.ParticipationRequestStatus;
 import ru.practicum.ewm.main.model.request.ParticipationRequest;
 
 import java.util.List;
@@ -14,8 +15,9 @@ public interface ParticipationRequestRepository extends JpaRepository<Participat
 
     List<ParticipationRequest> findByRequesterId(Long requesterId);
 
-    @Query("SELECT COUNT(pr) " +
-            "FROM ParticipationRequest pr " +
-            "WHERE pr.event.id = :eventId AND pr.status = 'CONFIRMED'")
-    Integer findConfirmedRequestsCount(Long eventId);
+    List<ParticipationRequest> findAllByEventIdAndIdIn(Long eventId, List<Long> ids);
+
+    List<ParticipationRequest> findAllByEventIdAndStatus(Long eventId, ParticipationRequestStatus status);
+
+    long countByEventIdAndStatus(Long eventId, ParticipationRequestStatus status);
 }
