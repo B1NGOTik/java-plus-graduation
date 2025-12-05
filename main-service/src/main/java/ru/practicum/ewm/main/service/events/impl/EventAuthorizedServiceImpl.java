@@ -104,7 +104,7 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
         checkInitiator(userId, eventId, event);
 
         if (event.getState() == EventState.PUBLISHED) {
-            throw new IllegalStateException("Cannot update published event");
+            throw new ConflictException("Не удается обновить опубликованное событие,уже PUBLISHED");
         }
 
         if (updateRequest.getEventDate() != null) {
@@ -112,7 +112,7 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
             if (newDate.isBefore(LocalDateTime.now().plusHours(2))) {
                 log.warn("Нарушено ограничение по дате при обновлении события id={}, userId={}, newDate={}",
                         eventId, userId, newDate);
-                throw new IllegalStateException(
+                throw new ConflictException(
                         "Field: eventDate. Error: должно содержать дату, которая еще не наступила."
                 );
             }
@@ -199,16 +199,16 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
 
     private static void checkInitiator(Long userId, Long eventId, Events event) {
         if (!event.getInitiator().getId().equals(userId)) {
-            throw new IllegalStateException("User " + userId + " is not initiator of event " + eventId);
+            throw new ConflictException("User " + userId + " is not initiator of event " + eventId);
         }
     }
 
-    private void validateRequestIdsNotEmpty(List<Long> requestIds, Long eventId) {
-        if (requestIds == null || requestIds.isEmpty()) {
-            log.warn("Пустой список requestIds при изменении статуса заявок для eventId={}", eventId);
-            throw new ConflictException("RequestIds must not be empty");
-        }
-    }
+//    private void validateRequestIdsNotEmpty(List<Long> requestIds, Long eventId) {
+//        if (requestIds == null || requestIds.isEmpty()) {
+//            log.warn("Пустой список requestIds при изменении статуса заявок для eventId={}", eventId);
+//            throw new ConflictException("RequestIds must not be empty");
+//        }
+//    }
 
 
 }

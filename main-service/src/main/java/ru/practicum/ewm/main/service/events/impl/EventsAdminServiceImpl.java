@@ -3,6 +3,7 @@ package ru.practicum.ewm.main.service.events.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.main.enums.ParticipationRequestStatus;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.mapper.events.EventsMapper;
 import ru.practicum.ewm.main.model.category.Category;
@@ -14,7 +15,10 @@ import ru.practicum.ewm.main.model.events.enums.StateActionAdminUpdateEvent;
 import ru.practicum.ewm.main.model.events.params.AdminEventSearchParams;
 import ru.practicum.ewm.main.repository.category.CategoryRepository;
 import ru.practicum.ewm.main.repository.events.EventsRepository;
+import ru.practicum.ewm.main.repository.request.ParticipationRequestRepository;
 import ru.practicum.ewm.main.service.events.EventsAdminService;
+import ru.practicum.ewm.main.service.request.ParticipationRequestService;
+import ru.practicum.ewm.main.service.request.ParticipationRequestValidator;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +32,7 @@ public class EventsAdminServiceImpl implements EventsAdminService {
     private final EventsMapper mapper;
     private final EventsRepository eventsRepository;
     private final CategoryRepository categoryRepository;
+    private final ParticipationRequestValidator requestValidator;
 
     @Override
     public List<EventFullDto> getEvents(AdminEventSearchParams params) {
@@ -35,9 +40,13 @@ public class EventsAdminServiceImpl implements EventsAdminService {
         var pageable = params.toPageable();
 
         List<Events> found = eventsRepository.findAdminEvents(params, pageable);
-        return found.stream()
+
+        List<EventFullDto> dtos = found.stream()
                 .map(mapper::toFullDto)
                 .toList();
+
+        requestValidator.fillConfirmedRequests(dtos);
+        return dtos;
     }
 
     @Override
@@ -78,4 +87,6 @@ public class EventsAdminServiceImpl implements EventsAdminService {
         Events saved = eventsRepository.save(event);
         return mapper.toFullDto(saved);
     }
+
+
 }

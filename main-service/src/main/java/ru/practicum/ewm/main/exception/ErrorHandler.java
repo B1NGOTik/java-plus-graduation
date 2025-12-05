@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
+
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError notFoundHandler(NotFoundException e, HttpServletRequest request) {
@@ -39,7 +40,7 @@ public class ErrorHandler {
                 request.getMethod(),
                 request.getRequestURI(),
                 e.getMessage());
-        return new ApiError(HttpStatus.CONFLICT, "Incorrectly made request.", e.getMessage(), LocalDateTime.now());
+        return new ApiError(HttpStatus.BAD_REQUEST, "Incorrectly made request.", e.getMessage(), LocalDateTime.now());
     }
 
     @ExceptionHandler(RuntimeException.class)
