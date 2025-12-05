@@ -1,11 +1,13 @@
 package ru.practicum.ewm.main.service.request;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.main.enums.ParticipationRequestStatus;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.model.events.Events;
+import ru.practicum.ewm.main.model.events.dto.EventFullDto;
 import ru.practicum.ewm.main.model.request.ParticipationRequest;
 import ru.practicum.ewm.main.repository.events.EventsRepository;
 import ru.practicum.ewm.main.repository.request.ParticipationRequestRepository;
@@ -14,7 +16,11 @@ import java.util.List;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class ParticipationRequestValidator {
+
+
+    private final ParticipationRequestRepository requestRepository;
 
     public Events checkEventForInitiator(EventsRepository eventsRepository,
                                          Long userId,
@@ -75,6 +81,35 @@ public class ParticipationRequestValidator {
             log.warn("Лимит участников уже достигнут: eventId={}, limit={}, confirmed={}",
                     eventId, participantLimit, confirmedCount);
             throw new ConflictException("The participant limit has been reached");
+        }
+    }
+
+    /**
+     * Обогащает одно событие числом подтверждённых заявок.
+     */
+    public void fillConfirmedRequests(EventFullDto dto) {
+        if (dto == null || dto.getId() == null) {
+            log.warn("fillConfirmedRequests: dto или dto.id == null, пропускаем");
+            return;
+        }
+
+        long confirmed = requestRepository.countByEventIdAndStatus(
+                dto.getId(),
+                ParticipationRequestStatus.CONFIRMED
+        );
+
+        dto.setConfirmedRequests(confirmed);
+
+        log.debug("Для события id={} установлено confirmedRequests={}",
+                dto.getId(), confirmed);
+    }
+
+    public void fillConfirmedRequests(List<EventFullDto> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return;
+        }
+        for (EventFullDto dto : dtos) {
+            fillConfirmedRequests(dto); // переиспользуем метод выше
         }
     }
 }

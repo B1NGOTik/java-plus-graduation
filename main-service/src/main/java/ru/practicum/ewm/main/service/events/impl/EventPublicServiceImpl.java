@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.StatsClient;
 import ru.practicum.ewm.main.exception.NotFoundException;
+import ru.practicum.ewm.main.exception.ValidationException;
 import ru.practicum.ewm.main.mapper.events.EventsMapper;
 import ru.practicum.ewm.main.model.events.Events;
 import ru.practicum.ewm.main.model.events.dto.EventFullDto;
@@ -17,6 +18,7 @@ import ru.practicum.ewm.main.model.events.enums.EventState;
 import ru.practicum.ewm.main.model.events.params.PublicEventSearchParams;
 import ru.practicum.ewm.main.repository.events.EventsRepository;
 import ru.practicum.ewm.main.service.events.EventPublicService;
+import ru.practicum.ewm.main.service.request.ParticipationRequestValidator;
 import ru.practicum.ewm.stats.dto.EndpointHitDto;
 import ru.practicum.ewm.stats.dto.ViewStatsDto;
 
@@ -37,11 +39,13 @@ public class EventPublicServiceImpl implements EventPublicService {
     private final EventsRepository eventsRepository;
     private final EventsMapper eventsMapper;
     private final StatsClient statsClient;
+    private final ParticipationRequestValidator requestValidator;
 
 
     public List<EventShortDto> getEvents(PublicEventSearchParams params,
                                          HttpServletRequest request) {
         log.info("Поиск публичных событий params={}", params);
+        validateSearchParams(params);
         saveHit(request);
 
         Pageable pageable = PageRequest.of(params.getFrom() / params.getSize(), params.getSize());
@@ -83,34 +87,39 @@ public class EventPublicServiceImpl implements EventPublicService {
 
     @Override
     public EventFullDto getById(Long eventId, HttpServletRequest request) {
+        log.info("Публичный запрос события по id={}", eventId);
         saveHit(request);
         Events events = eventsRepository.findByIdAndState(eventId, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
 
         String uri = request.getRequestURI();
         long views = getViewsForUris(List.of(uri)).getOrDefault(uri, 0L);
-
+        log.debug("Для события id={} по uri='{}' получено просмотров={}", eventId, uri, views);
         EventFullDto dto = eventsMapper.toFullDto(events);
-        EventFullDto enriched = new EventFullDto(
-                dto.annotation(),
-                dto.category(),
-                dto.confirmedRequests(),
-                dto.createdOn(),
-                dto.description(),
-                dto.eventDate(),
-                dto.id(),
-                dto.initiator(),
-                dto.location(),
-                dto.paid(),
-                dto.participantLimit(),
-                dto.publishedOn(),
-                dto.requestModeration(),
-                dto.state(),
-                dto.title(),
-                views
-        );
+        requestValidator.fillConfirmedRequests(dto);
+        dto.setViews(views);
 
-        return enriched;
+//        EventFullDto enriched = new EventFullDto(
+//                dto.annotation(),
+//                dto.category(),
+//                dto.confirmedRequests(),
+//                dto.createdOn(),
+//                dto.description(),
+//                dto.eventDate(),
+//                dto.id(),
+//                dto.initiator(),
+//                dto.location(),
+//                dto.paid(),
+//                dto.participantLimit(),
+//                dto.publishedOn(),
+//                dto.requestModeration(),
+//                dto.state(),
+//                dto.title(),
+//                views
+//        );
+
+        log.info("Событие отдано клиенту: id={}, views={}", dto.getId(), dto.getViews());
+        return dto;
     }
 
     private Map<String, Long> getViewsForUris(List<String> uris) {
@@ -143,6 +152,19 @@ public class EventPublicServiceImpl implements EventPublicService {
             statsClient.saveHit(hit);
         } catch (Exception e) {
             log.error("Не удалось отправить хит в stats-сервис: {}", e.getMessage(), e);
+        }
+    }
+
+    private void validateSearchParams(PublicEventSearchParams params) {
+        LocalDateTime start = params.getRangeStart();
+        LocalDateTime end = params.getRangeEnd();
+
+        if (start != null && end != null && start.isAfter(end)) {
+            log.warn("Некорректный диапазон дат при поиске событий: rangeStart={} > rangeEnd={}",
+                    start, end);
+            throw new ValidationException(
+                    "rangeStart must not be after rangeEnd"
+            );
         }
     }
 }

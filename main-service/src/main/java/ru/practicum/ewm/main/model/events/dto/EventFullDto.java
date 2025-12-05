@@ -1,6 +1,7 @@
 package ru.practicum.ewm.main.model.events.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.*;
 import ru.practicum.ewm.main.model.category.CategoryDto;
 import ru.practicum.ewm.main.model.events.enums.EventState;
 import ru.practicum.ewm.main.model.user.UserShortDto;
@@ -8,41 +9,61 @@ import ru.practicum.ewm.main.model.user.UserShortDto;
 import java.time.LocalDateTime;
 
 
-public record EventFullDto(
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class EventFullDto {
 
-        String annotation,              // краткое описание
+    // краткое описание
+    private String annotation;
 
-        CategoryDto category,           // категория
+    // категория
+    private CategoryDto category;
 
-        Long confirmedRequests,         // РАСЧЁТНОЕ поле (не хранится в Event)
+    // РАСЧЁТНОЕ поле (не хранится в Event)
+    private Long confirmedRequests;
 
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime createdOn,        // дата создания
+    // дата создания
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createdOn;
 
-        String description,             // полное описание
+    // полное описание
+    private String description;
 
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime eventDate,        // дата проведения
+    // дата проведения
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime eventDate;
 
-        Long id,                        // идентификатор
+    // идентификатор
+    private Long id;
 
-        UserShortDto initiator,         // инициатор события
+    // инициатор события
+    private UserShortDto initiator;
 
-        LocationDto location,           // широта/долгота
+    // широта/долгота
+    private LocationDto location;
 
-        Boolean paid,                   // платное ли событие
+    // платное ли событие
+    private Boolean paid;
 
-        Integer participantLimit,       // лимит участников (0 — без лимита)
+    // лимит участников (0 — без лимита)
+    private Integer participantLimit;
 
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime publishedOn,      // дата публикации
+    // дата публикации
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime publishedOn;
 
-        Boolean requestModeration,      // нужна ли премодерация заявок
+    // нужна ли премодерация заявок
+    private Boolean requestModeration;
 
-        EventState state,               // PENDING / PUBLISHED / CANCELED
+    // PENDING / PUBLISHED / CANCELED
+    private EventState state;
 
-        String title,                   // заголовок
+    // заголовок
+    private String title;
 
-        Long views                      // РАСЧЁТНОЕ поле (не хранится в Event)
-) {
+    // РАСЧЁТНОЕ поле (не хранится в Event)
+    private Long views;
 }
