@@ -12,7 +12,7 @@ import ru.practicum.ewm.main.repository.locations.LocationRepository;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class locationServiceImpl implements LocationService{
+public class LocationServiceImpl implements LocationService {
 
     private final LocationRepository locationRepository;
     private final LocationMapper locationMapper;

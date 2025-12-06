@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
+import ru.practicum.ewm.main.exception.ValidationException;
 import ru.practicum.ewm.main.mapper.events.EventsMapper;
 import ru.practicum.ewm.main.model.category.Category;
 import ru.practicum.ewm.main.model.events.Events;
@@ -18,6 +19,7 @@ import ru.practicum.ewm.main.model.events.dto.EventShortDto;
 import ru.practicum.ewm.main.model.events.dto.NewEventDto;
 import ru.practicum.ewm.main.model.events.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.main.model.events.enums.EventState;
+import ru.practicum.ewm.main.model.events.enums.StateActionUserUpdateEvent;
 import ru.practicum.ewm.main.model.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.main.model.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.main.model.request.dto.ParticipationRequestDto;
@@ -66,6 +68,15 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
         log.info("Создание события: userId={}, payload={}", userId, newEventDto);
         User user = userService.findUserById(userId);
 
+        LocalDateTime newDate = newEventDto.getEventDate();
+        if (newDate.isBefore(LocalDateTime.now().plusHours(2))) {
+            log.warn("Нарушено ограничение по дате при добавлении нового события userId={}, newDate={}",
+                    userId, newDate);
+            throw new ValidationException(
+                    "Field: eventDate. Error: должно содержать дату, которая еще не наступила."
+            );
+        }
+
         Category category = categoryService.findCategoryEntityById(newEventDto.getCategory());
 
         Location location = locationService.saveLocation(newEventDto.getLocation());
@@ -103,7 +114,8 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
         Events event = checkEvent(eventId);
         checkInitiator(userId, eventId, event);
 
-        if (event.getState() == EventState.PUBLISHED) {
+        if (updateRequest.getStateAction() != StateActionUserUpdateEvent.SEND_TO_REVIEW &&
+                event.getState() == EventState.PUBLISHED) {
             throw new ConflictException("Не удается обновить опубликованное событие,уже PUBLISHED");
         }
 
@@ -112,7 +124,7 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
             if (newDate.isBefore(LocalDateTime.now().plusHours(2))) {
                 log.warn("Нарушено ограничение по дате при обновлении события id={}, userId={}, newDate={}",
                         eventId, userId, newDate);
-                throw new ConflictException(
+                throw new ValidationException(
                         "Field: eventDate. Error: должно содержать дату, которая еще не наступила."
                 );
             }

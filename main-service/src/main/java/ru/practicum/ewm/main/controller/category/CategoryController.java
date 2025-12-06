@@ -2,8 +2,10 @@ package ru.practicum.ewm.main.controller.category;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.model.category.CategoryDto;
 import ru.practicum.ewm.main.model.category.NewCategoryDto;
 import ru.practicum.ewm.main.service.category.CategoryService;
@@ -26,7 +28,11 @@ public class CategoryController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(ADMIN_CATEGORIES_PATH + "/{categoryId}")
     public void removeCategory(@PathVariable Long categoryId) {
-        categoryService.removeCategory(categoryId);
+        try {
+            categoryService.removeCategory(categoryId);
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException(e.getMessage());
+        }
     }
 
     @PatchMapping(ADMIN_CATEGORIES_PATH + "/{categoryId}")

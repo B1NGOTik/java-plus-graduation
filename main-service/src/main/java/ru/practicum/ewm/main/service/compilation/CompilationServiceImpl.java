@@ -37,7 +37,7 @@ public class CompilationServiceImpl implements CompilationService {
         if (newDto.getEvents().size() != events.size()) {
             throw new NotFoundException("Найдены не все события, добавляемые в подборку");
         }
-        //TODO добавить запрос к views и confirmed requests
+
         try {
             Compilation savedCompilation = compilationRepository.save(CompilationMapper.toModel(newDto));
             List<CompilationEvent> list = events.stream().map(e -> new CompilationEvent(savedCompilation, e)).toList();
@@ -73,7 +73,7 @@ public class CompilationServiceImpl implements CompilationService {
             if (updateDto.getEvents().size() != events.size()) {
                 throw new NotFoundException("Найдены не все события, добавляемые в подборку");
             }
-            //TODO добавить запрос к views и confirmed requests
+
         } else {
             events = eventsRepository.findByIdIn(compilationEventRepository.findEventIdsByCompilationId(compId));
         }

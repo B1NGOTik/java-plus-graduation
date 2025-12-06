@@ -3,8 +3,9 @@ package ru.practicum.ewm.main.service.events.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.ewm.main.enums.ParticipationRequestStatus;
+import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
+import ru.practicum.ewm.main.exception.ValidationException;
 import ru.practicum.ewm.main.mapper.events.EventsMapper;
 import ru.practicum.ewm.main.model.category.Category;
 import ru.practicum.ewm.main.model.events.Events;
@@ -15,9 +16,7 @@ import ru.practicum.ewm.main.model.events.enums.StateActionAdminUpdateEvent;
 import ru.practicum.ewm.main.model.events.params.AdminEventSearchParams;
 import ru.practicum.ewm.main.repository.category.CategoryRepository;
 import ru.practicum.ewm.main.repository.events.EventsRepository;
-import ru.practicum.ewm.main.repository.request.ParticipationRequestRepository;
 import ru.practicum.ewm.main.service.events.EventsAdminService;
-import ru.practicum.ewm.main.service.request.ParticipationRequestService;
 import ru.practicum.ewm.main.service.request.ParticipationRequestValidator;
 
 import java.time.LocalDateTime;
@@ -60,6 +59,17 @@ public class EventsAdminServiceImpl implements EventsAdminService {
 
         mapper.updateEventFromAdminRequest(updateRequest, event);
 
+        if (updateRequest.getEventDate() != null) {
+            LocalDateTime newDate = updateRequest.getEventDate();
+            if (newDate.isBefore(LocalDateTime.now().plusHours(2))) {
+                log.warn("Нарушено ограничение по дате при обновлении события id={}, newDate={}",
+                        eventId, newDate);
+                throw new ValidationException(
+                        "Field: eventDate. Error: должно содержать дату, которая еще не наступила."
+                );
+            }
+        }
+
         if (updateRequest.getCategory() != null) {
             Category category = categoryRepository.findById(updateRequest.getCategory())
                     .orElseThrow(() -> new NotFoundException(
@@ -74,13 +84,13 @@ public class EventsAdminServiceImpl implements EventsAdminService {
 
         if (updateRequest.getStateAction() != null) {
             if (event.getState() != EventState.PENDING) {
-                throw new IllegalStateException("Можно опубликовать только событие в статусе PENDING");
+                throw new ConflictException("Можно опубликовать только событие в статусе PENDING");
             }
             event.setState(EventState.PUBLISHED);
             event.setPublishedOn(LocalDateTime.now());
         } else if (updateRequest.getStateAction() == StateActionAdminUpdateEvent.REJECT_EVENT) {
             if (event.getState() == EventState.PUBLISHED) {
-                throw new IllegalStateException("Нельзя отклонить уже опубликованное событие");
+                throw new ConflictException("Нельзя отклонить уже опубликованное событие");
             }
             event.setState(EventState.CANCELED);
         }

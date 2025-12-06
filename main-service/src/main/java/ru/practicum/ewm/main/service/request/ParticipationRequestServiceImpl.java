@@ -78,9 +78,9 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
                 .status(ParticipationRequestStatus.PENDING)
                 .build();
 
-        if (Boolean.FALSE.equals(event.getRequestModeration())) {
+        if (Boolean.FALSE.equals(event.getRequestModeration()) || limit == 0) {
             newRequest.setStatus(ParticipationRequestStatus.CONFIRMED);
-            log.debug("Премодерация отключена, заявка будет сразу CONFIRMED: eventId={}, requesterId={}",
+            log.debug("Премодерация отключена либо нет ограничений на количество участников, заявка будет сразу CONFIRMED: eventId={}, requesterId={}",
                     eventId, requesterId);
         }
 
