@@ -19,6 +19,7 @@ import ru.practicum.ewm.main.model.events.dto.EventShortDto;
 import ru.practicum.ewm.main.model.events.dto.NewEventDto;
 import ru.practicum.ewm.main.model.events.dto.UpdateEventUserRequest;
 import ru.practicum.ewm.main.model.events.enums.EventState;
+import ru.practicum.ewm.main.model.events.enums.StateActionUserUpdateEvent;
 import ru.practicum.ewm.main.model.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.ewm.main.model.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.main.model.request.dto.ParticipationRequestDto;
@@ -113,7 +114,8 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
         Events event = checkEvent(eventId);
         checkInitiator(userId, eventId, event);
 
-        if (event.getState() == EventState.PUBLISHED) {
+        if (updateRequest.getStateAction() != StateActionUserUpdateEvent.SEND_TO_REVIEW &&
+                event.getState() == EventState.PUBLISHED) {
             throw new ConflictException("Не удается обновить опубликованное событие,уже PUBLISHED");
         }
 
