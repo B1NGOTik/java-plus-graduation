@@ -14,7 +14,7 @@ public interface EventsRepository extends JpaRepository<Events, Long>,
         EventPublicQueryRepository, EventAdminQueryRepository {
 
     @EntityGraph(type = EntityGraph.EntityGraphType.LOAD,
-            attributePaths = {"category", "location", "location"})
+            attributePaths = {"category", "location"})
     Page<Events> findAllByInitiatorId(Long initiatorId, Pageable pageable);
 
     Optional<Events> findByIdAndState(Long eventId, EventState state);

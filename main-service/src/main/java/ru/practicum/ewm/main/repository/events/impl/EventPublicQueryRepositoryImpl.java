@@ -15,6 +15,7 @@ import ru.practicum.ewm.main.model.events.enums.EventState;
 import ru.practicum.ewm.main.model.events.params.PublicEventSearchParams;
 import ru.practicum.ewm.main.repository.events.EventPublicQueryRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -41,13 +42,17 @@ public class EventPublicQueryRepositoryImpl implements EventPublicQueryRepositor
             predicate.and(events.paid.eq(params.getPaid()));
         }
 
-        if (params.getRangeStart() != null) {
-            predicate.and(events.eventDate.goe(params.getRangeStart()));
+        if (params.getRangeStart() != null && params.getRangeEnd() != null) {
+            predicate.and(events.eventDate.after(LocalDateTime.now()));
+        }else {
+            if (params.getRangeStart() != null) {
+                predicate.and(events.eventDate.goe(params.getRangeStart()));
+            }
+            if (params.getRangeEnd() != null) {
+                predicate.and(events.eventDate.loe(params.getRangeEnd()));
+            }
         }
 
-        if (params.getRangeEnd() != null) {
-            predicate.and(events.eventDate.loe(params.getRangeEnd()));
-        }
         JPAQuery<Events> query = queryFactory
                 .selectFrom(events)
                 .where(predicate);

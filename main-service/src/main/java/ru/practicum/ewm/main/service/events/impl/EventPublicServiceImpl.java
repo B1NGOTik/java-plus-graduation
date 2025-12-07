@@ -64,7 +64,6 @@ public class EventPublicServiceImpl implements EventPublicService {
 
         return events.stream()
                 .map(e -> {
-                    // базовый DTO от MapStruct
                     EventShortDto dto = eventsMapper.toShortDto(e);
                     String uri = "/events/" + e.getId();
 
@@ -98,25 +97,6 @@ public class EventPublicServiceImpl implements EventPublicService {
         EventFullDto dto = eventsMapper.toFullDto(events);
         requestValidator.fillConfirmedRequests(dto);
         dto.setViews(views);
-
-//        EventFullDto enriched = new EventFullDto(
-//                dto.annotation(),
-//                dto.category(),
-//                dto.confirmedRequests(),
-//                dto.createdOn(),
-//                dto.description(),
-//                dto.eventDate(),
-//                dto.id(),
-//                dto.initiator(),
-//                dto.location(),
-//                dto.paid(),
-//                dto.participantLimit(),
-//                dto.publishedOn(),
-//                dto.requestModeration(),
-//                dto.state(),
-//                dto.title(),
-//                views
-//        );
 
         log.info("Событие отдано клиенту: id={}, views={}", dto.getId(), dto.getViews());
         return dto;
