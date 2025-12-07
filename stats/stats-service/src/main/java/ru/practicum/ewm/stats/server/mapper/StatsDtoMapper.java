@@ -9,7 +9,7 @@ public class StatsDtoMapper {
         return ViewStatsDto.builder()
                 .app((String) objects[0])
                 .uri((String) objects[1])
-                .hits(((Long)objects[2]))
+                .hits(((Long) objects[2]))
                 .build();
     }
 }

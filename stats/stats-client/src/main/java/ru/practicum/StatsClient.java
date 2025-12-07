@@ -10,14 +10,14 @@ import ru.practicum.ewm.stats.dto.ViewStatsDto;
 
 import java.util.List;
 
-@FeignClient(name = "stats-service",
-        url = "${stats-service.url}")
+@FeignClient(name = "stats-service", url = "${stats-service.url}")
 public interface StatsClient {
+
     @PostMapping("/hit")
     void saveHit(@RequestBody EndpointHitDto endpointHitDto);
 
     @GetMapping("/stats")
-    List<ViewStatsDto> getStats(@RequestParam String start,
+    public List<ViewStatsDto> getStats(@RequestParam String start,
                                 @RequestParam String end,
                                 @RequestParam(required = false) List<String> uris,
                                 @RequestParam(defaultValue = "false") boolean unique);

@@ -1,0 +1,21 @@
+server:
+  port: 8080
+stats-service:
+  url: http://stats-server:9090
+spring:
+  output:
+    ansi:
+      enabled: always
+  sql:
+    init:
+      mode: always
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://ewm-db:5432/main
+    username: main
+    password: main
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
