@@ -14,10 +14,10 @@ public interface CompilationEventRepository extends JpaRepository<CompilationEve
             FROM CompilationEvent ce
             WHERE ce.compilation.id = :compilationId AND ce.event.id = :eventId
             """)
-                Optional<CompilationEvent> findByCompilationIdAndEventId(@Param("compilationId") Long compilationId,
-                                                                         @Param("eventId") Long eventId);
+    Optional<CompilationEvent> findByCompilationIdAndEventId(@Param("compilationId") Long compilationId,
+                                                             @Param("eventId") Long eventId);
 
-                @Query("""
+    @Query("""
             SELECT ce
             FROM CompilationEvent ce
             JOIN FETCH ce.event e
