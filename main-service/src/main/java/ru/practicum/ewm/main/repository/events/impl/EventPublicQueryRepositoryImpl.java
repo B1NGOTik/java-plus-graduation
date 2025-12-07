@@ -44,7 +44,7 @@ public class EventPublicQueryRepositoryImpl implements EventPublicQueryRepositor
 
         if (params.getRangeStart() != null && params.getRangeEnd() != null) {
             predicate.and(events.eventDate.after(LocalDateTime.now()));
-        }else {
+        } else {
             if (params.getRangeStart() != null) {
                 predicate.and(events.eventDate.goe(params.getRangeStart()));
             }

@@ -15,12 +15,14 @@ import ru.practicum.ewm.main.mapper.events.EventsMapper;
 import ru.practicum.ewm.main.model.compilation.*;
 import ru.practicum.ewm.main.model.compilation.params.PublicCompilationSearchParams;
 import ru.practicum.ewm.main.model.events.Events;
+import ru.practicum.ewm.main.model.events.dto.EventShortDto;
 import ru.practicum.ewm.main.repository.compilation.CompilationEventRepository;
 import ru.practicum.ewm.main.repository.compilation.CompilationRepository;
 import ru.practicum.ewm.main.repository.events.EventsRepository;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -118,24 +120,32 @@ public class CompilationServiceImpl implements CompilationService {
             return List.of();
         }
 
-        List<Long> cIds = compilations.stream().map(Compilation::getId).toList();
-        List<CompilationEvent> compilationEvents = compilationEventRepository
-                .findByCompilationIds(cIds);
+        List<Long> cIds = compilations.stream()
+                .map(Compilation::getId)
+                .toList();
 
-        List<CompilationDto> result = new ArrayList<>();
+        List<CompilationEvent> compilationEvents =
+                compilationEventRepository
+                        .findByCompilationIds(cIds);
 
-        for (Compilation c : compilations) {
-            List<Events> events1 = new ArrayList<>();
-            for (CompilationEvent ce : compilationEvents) {
-                if (c.getId().equals(ce.getCompilation().getId())) {
-                    events1.add(ce.getEvent());
-                }
-            }
-            CompilationDto dto = CompilationMapper.toDto(c, events1.stream().map(eventsMapper::toShortDto).toList());
-            result.add(dto);
-        }
+        Map<Long, List<Events>> eventsByCompilationId = compilationEvents.stream()
+                .collect(Collectors.groupingBy(
+                        ce -> ce.getCompilation().getId(),
+                        Collectors.mapping(CompilationEvent::getEvent, Collectors.toList())
+                ));
 
-        return result;
+
+        return compilations.stream()
+                .map(c -> {
+                    List<Events> events = eventsByCompilationId
+                            .getOrDefault(c.getId(), List.of());
+
+                    List<EventShortDto> eventShortDtos = events.stream()
+                            .map(eventsMapper::toShortDto)
+                            .toList();
+
+                    return CompilationMapper.toDto(c, eventShortDtos);
+                })
+                .toList();
     }
-
 }
