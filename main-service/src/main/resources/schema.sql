@@ -64,3 +64,17 @@ CREATE TABLE IF NOT EXISTS requests(
     CONSTRAINT fk_requests_events FOREIGN KEY(event_id) REFERENCES events(id),
     CONSTRAINT fk_requests_users FOREIGN KEY(requester_id) REFERENCES users(id)
 );
+
+CREATE TABLE IF NOT EXISTS comments(
+    id BIGSERIAL PRIMARY KEY,
+    event_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    comment_text VARCHAR(512),
+    created_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    status VARCHAR(32) NOT NULL,
+
+    CONSTRAINT fk_comments_events
+        FOREIGN KEY(event_id) REFERENCES events(id),
+    CONSTRAINT fk_comments_users
+        FOREIGN KEY(user_id) REFERENCES users(id)
+);
