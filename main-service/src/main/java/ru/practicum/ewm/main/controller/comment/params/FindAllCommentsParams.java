@@ -23,4 +23,6 @@ public class FindAllCommentsParams {
     Long from;
 
     Long size;
+
+    String sort;
 }

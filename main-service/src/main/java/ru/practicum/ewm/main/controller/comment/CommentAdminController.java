@@ -28,8 +28,9 @@ public class CommentAdminController {
                                                 @RequestParam(required = false) CommentStatus status,
                                                 @RequestParam(required = false) LocalDateTime rangeStart,
                                                 @RequestParam(required = false) LocalDateTime rangeEnd,
-                                                @RequestParam(required = false, defaultValue = "0") Long from,
-                                                @RequestParam(required = false, defaultValue = "10") Long size) {
+                                                @RequestParam(defaultValue = "0") Long from,
+                                                @RequestParam(defaultValue = "10") Long size,
+                                                @RequestParam(defaultValue = "desc") String sort) {
         log.info("Admin: запрос на получение комментариев");
         FindAllCommentsParams params = FindAllCommentsParams.builder()
                 .userId(userId)
@@ -39,6 +40,7 @@ public class CommentAdminController {
                 .rangeEnd(rangeEnd)
                 .from(from)
                 .size(size)
+                .sort(sort)
                 .build();
         return commentService.findAllComments(params);
     }

@@ -26,12 +26,14 @@ public class CommentPublicController {
     @GetMapping("/events/{eventId}/comments")
     public List<CommentShortDto> findAllComments(@PathVariable Long eventId,
                                                  @RequestParam(defaultValue = "10") Long size,
-                                                 @RequestParam(defaultValue = "0") Long from) {
+                                                 @RequestParam(defaultValue = "0") Long from,
+                                                 @RequestParam(defaultValue = "desc") String sort) {
         FindAllCommentsParams params = FindAllCommentsParams.builder()
                 .eventId(eventId)
                 .status(CommentStatus.PUBLISHED)
                 .size(size)
                 .from(from)
+                .sort(sort)
                 .build();
         return commentService.findAllCommentsForEvent(params);
     }

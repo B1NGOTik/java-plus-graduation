@@ -1,6 +1,8 @@
 package ru.practicum.ewm.main.repository.comment.impl;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -47,10 +49,18 @@ public class QCommentRepositoryImpl implements QCommentRepository {
             predicate.and(comment.createdOn.loe(params.getRangeEnd()));
         }
 
+        OrderSpecifier<?> orderSpecifier;
+        if ("asc".equalsIgnoreCase(params.getSort())) {
+            orderSpecifier = new OrderSpecifier<>(Order.ASC, comment.createdOn);
+        } else {
+            orderSpecifier = new OrderSpecifier<>(Order.DESC, comment.createdOn);
+        }
+
+
         JPAQuery<Comment> query = queryFactory
                 .selectFrom(comment)
                 .where(predicate)
-                .orderBy(comment.createdOn.desc());
+                .orderBy(orderSpecifier);
 
         JPAQuery<Long> countQuery = queryFactory
                 .select(comment.count())

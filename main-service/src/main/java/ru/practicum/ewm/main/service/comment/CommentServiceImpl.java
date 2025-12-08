@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.main.controller.comment.params.FindAllCommentsParams;
+import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.mapper.comment.CommentFullDtoMapper;
 import ru.practicum.ewm.main.mapper.comment.CommentShortDtoMapper;
@@ -14,6 +15,9 @@ import ru.practicum.ewm.main.model.comment.CommentStatus;
 import ru.practicum.ewm.main.model.comment.dto.CommentFullDto;
 import ru.practicum.ewm.main.model.comment.dto.CommentShortDto;
 import ru.practicum.ewm.main.model.comment.dto.NewCommentRequest;
+import ru.practicum.ewm.main.model.events.Events;
+import ru.practicum.ewm.main.model.events.enums.EventState;
+import ru.practicum.ewm.main.model.user.User;
 import ru.practicum.ewm.main.repository.comment.CommentRepository;
 import ru.practicum.ewm.main.repository.events.EventsRepository;
 import ru.practicum.ewm.main.repository.user.UserRepository;
@@ -45,10 +49,17 @@ public class CommentServiceImpl implements CommentService{
     }
 
     @Override
-    public CommentFullDto addComment(Long eventId, Long authorId, NewCommentRequest comment) {
-        Comment newComment = NewCommentRequestMapper.toEntity(comment);
-        newComment.setAuthor(userRepository.findById(authorId).orElseThrow(() -> new NotFoundException("Пользователь не найден")));
-        newComment.setEvent(eventsRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие не найдено")));
+    public CommentFullDto addComment(Long eventId, Long authorId, NewCommentRequest request) {
+        User author = userRepository.findById(authorId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        Events event = eventsRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Событие не найдено"));
+        if (!event.getState().equals(EventState.PUBLISHED)) {
+            throw new ConflictException("Событие еще не опубликовано");
+        }
+        Comment newComment = NewCommentRequestMapper.toEntity(request);
+        newComment.setAuthor(author);
+        newComment.setEvent(event);
         newComment.setStatus(CommentStatus.PENDING);
         return CommentFullDtoMapper.toDto(commentRepository.save(newComment));
     }
@@ -62,7 +73,15 @@ public class CommentServiceImpl implements CommentService{
     }
 
     @Override
-    public void  removeCommentById(Long userId, Long commentId) {
+    public void removeCommentById(Long userId, Long commentId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Пользователь не найден");
+        }
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        if (!userId.equals(comment.getAuthor().getId())) {
+            throw new ConflictException("Пользователь не является автором комментария");
+        }
         commentRepository.deleteById(commentId);
     }
 
@@ -76,13 +95,18 @@ public class CommentServiceImpl implements CommentService{
 
     @Override
     public CommentFullDto moderateComment(Long commentId, CommentStatus status) {
-        Comment updatingComment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        Comment updatingComment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
         updatingComment.setStatus(status);
         return CommentFullDtoMapper.toDto(commentRepository.save(updatingComment));
     }
 
     @Override
     public void adminRemoveCommentById(Long commentId) {
-        commentRepository.deleteById(commentId);
+        if (commentRepository.existsById(commentId)) {
+            commentRepository.deleteById(commentId);
+        } else {
+            throw new NotFoundException("Пользователь не найден");
+        }
     }
 }

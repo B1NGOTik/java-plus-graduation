@@ -19,12 +19,14 @@ public class CommentAuthorizedController {
     public List<CommentFullDto> findAllUserComments(@PathVariable Long userId,
                                                      @RequestParam(required = false) Long eventId,
                                                      @RequestParam(defaultValue = "10") Long size,
-                                                     @RequestParam(defaultValue = "0") Long from) {
+                                                     @RequestParam(defaultValue = "0") Long from,
+                                                     @RequestParam(defaultValue = "desc") String sort) {
         FindAllCommentsParams params = FindAllCommentsParams.builder()
                 .userId(userId)
                 .eventId(eventId)
                 .size(size)
                 .from(from)
+                .sort(sort)
                 .build();
         return commentService.findCommentsByAuthorId(params);
     }
