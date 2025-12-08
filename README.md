@@ -28,7 +28,6 @@
 ### 3. Удалить свой комментарий
 #### DELETE /users/{userId}/comments/{commentId}
 
-
 ---
 
 ## 👨‍💼 Admin API
@@ -37,8 +36,8 @@
 - Параметры запроса:
     - eventId (опционально) — фильтр по событию;
     - userId (опционально) — фильтр по автору комментария;
-    - statuses (опционально) — список статусов (`PENDING`, `PUBLISHED`, `REJECTED`);
-    - rangeStart, rangeEnd — интервал по дате создания;
+    - status (опционально) — статус публикации комментария (`PENDING`, `PUBLISHED`, `REJECTED`);
+    - rangeStart, rangeEnd (опционально) — интервал по дате создания;
     - from, size — пагинация.
 ### 2. Модерация комментария (изменение статуса)
 #### PATCH /admin/comments/{commentId}

@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.main.model.comment.CommentStatus;
-import ru.practicum.ewm.main.model.events.dto.EventShortDto;
-import ru.practicum.ewm.main.model.user.UserShortDto;
 
 import java.time.LocalDateTime;
 
@@ -15,8 +13,9 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CommentFullDto {
     Long id;
-    EventShortDto event;
-    UserShortDto author;
+    Long eventId;
+    Long authorId;
+    String text;
     LocalDateTime createdOn;
     CommentStatus status;
 }

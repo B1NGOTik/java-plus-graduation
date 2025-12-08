@@ -1,29 +1,28 @@
 package ru.practicum.ewm.main.service.comment;
 
+import ru.practicum.ewm.main.controller.comment.params.FindAllCommentsParams;
 import ru.practicum.ewm.main.model.comment.CommentStatus;
 import ru.practicum.ewm.main.model.comment.dto.CommentFullDto;
 import ru.practicum.ewm.main.model.comment.dto.CommentShortDto;
 import ru.practicum.ewm.main.model.comment.dto.NewCommentRequest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CommentService {
-    List<CommentShortDto> findAllCommentsForEvent(String sort, Long from, Long size);
+
+    List<CommentShortDto> findAllCommentsForEvent(FindAllCommentsParams params);
 
     CommentFullDto findCommentById(Long eventId, Long commentId);
 
     CommentFullDto addComment(Long eventId, Long authorId, NewCommentRequest comment);
 
-    List<CommentShortDto> findCommentsByAuthorId(Long authorId, Long eventId, Long from, Long size, String sort);
+    List<CommentFullDto> findCommentsByAuthorId(FindAllCommentsParams params);
 
-    Void removeCommentById(Long userId, Long commentId);
+    void removeCommentById(Long userId, Long commentId);
 
-    List<CommentFullDto> findAllComments(Long eventId, Long userId, CommentStatus status,
-                                         LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                         Long from, Long size);
+    List<CommentFullDto> findAllComments(FindAllCommentsParams params);
 
     CommentFullDto moderateComment(Long commentId, CommentStatus status);
 
-    Void adminRemoveCommentById(Long commentId);
+    void adminRemoveCommentById(Long commentId);
 }
