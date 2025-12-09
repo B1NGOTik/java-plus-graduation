@@ -29,14 +29,14 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 @Slf4j
-public class CommentServiceImpl implements CommentService{
+public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final EventsRepository eventsRepository;
 
     @Override
     public List<CommentShortDto> findAllCommentsForEvent(FindAllCommentsParams params) {
-        if(!eventsRepository.existsById(params.getEventId())) {
+        if (!eventsRepository.existsById(params.getEventId())) {
             throw new NotFoundException("Событие не найдено");
         }
         return commentRepository.findAllComments(params).getContent()
@@ -47,12 +47,12 @@ public class CommentServiceImpl implements CommentService{
 
     @Override
     public CommentFullDto findCommentById(Long eventId, Long commentId) {
-        if(!eventsRepository.existsById(eventId)) {
+        if (!eventsRepository.existsById(eventId)) {
             throw new NotFoundException("Событие не найдено");
         }
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
-        if(!comment.getStatus().equals(CommentStatus.PUBLISHED)) {
+        if (!comment.getStatus().equals(CommentStatus.PUBLISHED)) {
             throw new NotFoundException("Комментарий еще не опубликован");
         }
         return CommentFullDtoMapper.toDto(comment);

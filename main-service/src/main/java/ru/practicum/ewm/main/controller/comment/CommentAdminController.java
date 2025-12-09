@@ -10,7 +10,9 @@ import ru.practicum.ewm.main.model.comment.dto.CommentFullDto;
 import ru.practicum.ewm.main.service.comment.CommentService;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -28,22 +30,43 @@ public class CommentAdminController {
     public List<CommentFullDto> findAllComments(@RequestParam(required = false) Long userId,
                                                 @RequestParam(required = false) Long eventId,
                                                 @RequestParam(required = false) CommentStatus status,
-                                                @RequestParam(required = false) LocalDateTime rangeStart,
-                                                @RequestParam(required = false) LocalDateTime rangeEnd,
+                                                @RequestParam(required = false) String rangeStart,
+                                                @RequestParam(required = false) String rangeEnd,
                                                 @RequestParam(defaultValue = "0") Long from,
                                                 @RequestParam(defaultValue = "10") Long size,
                                                 @RequestParam(defaultValue = "desc") String sort) {
         log.info("Admin: запрос на получение комментариев");
+
+        LocalDateTime rangeStartParsed = null;
+        LocalDateTime rangeEndParsed = null;
+
+        if (rangeStart != null && !rangeStart.isBlank()) {
+            String decodedRangeStart = rangeStart.replace("%20", " ").replace("%3A", ":");
+            rangeStartParsed = LocalDateTime.parse(
+                    decodedRangeStart,
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            );
+        }
+
+        if (rangeEnd != null && !rangeEnd.isBlank()) {
+            String decodedRangeEnd = rangeEnd.replace("%20", " ").replace("%3A", ":");
+            rangeEndParsed = LocalDateTime.parse(
+                    decodedRangeEnd,
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            );
+        }
+
         FindAllCommentsParams params = FindAllCommentsParams.builder()
                 .userId(userId)
                 .eventId(eventId)
                 .status(status)
-                .rangeStart(rangeStart)
-                .rangeEnd(rangeEnd)
+                .rangeStart(rangeStartParsed)
+                .rangeEnd(rangeEndParsed)
                 .from(from)
                 .size(size)
                 .sort(sort)
                 .build();
+
         return commentService.findAllComments(params);
     }
 

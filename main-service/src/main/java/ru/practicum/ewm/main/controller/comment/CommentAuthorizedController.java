@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.main.controller.comment.params.FindAllCommentsParams;
 import ru.practicum.ewm.main.model.comment.dto.CommentFullDto;
-import ru.practicum.ewm.main.model.comment.dto.CommentShortDto;
 import ru.practicum.ewm.main.model.comment.dto.NewCommentRequest;
 import ru.practicum.ewm.main.service.comment.CommentService;
 
@@ -18,10 +17,10 @@ public class CommentAuthorizedController {
 
     @GetMapping("/users/{userId}/comments")
     public List<CommentFullDto> findAllUserComments(@PathVariable Long userId,
-                                                     @RequestParam(required = false) Long eventId,
-                                                     @RequestParam(defaultValue = "10") Long size,
-                                                     @RequestParam(defaultValue = "0") Long from,
-                                                     @RequestParam(defaultValue = "desc") String sort) {
+                                                    @RequestParam(required = false) Long eventId,
+                                                    @RequestParam(defaultValue = "10") Long size,
+                                                    @RequestParam(defaultValue = "0") Long from,
+                                                    @RequestParam(defaultValue = "desc") String sort) {
         FindAllCommentsParams params = FindAllCommentsParams.builder()
                 .userId(userId)
                 .eventId(eventId)
@@ -42,7 +41,7 @@ public class CommentAuthorizedController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/users/{userId}/comments/{commentId}")
-    public void removeComment(@PathVariable Long userId, @PathVariable Long commentId){
+    public void removeComment(@PathVariable Long userId, @PathVariable Long commentId) {
         commentService.removeCommentById(userId, commentId);
     }
 

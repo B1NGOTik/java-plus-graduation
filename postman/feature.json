@@ -1148,6 +1148,7 @@
 							"        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
 							"        await api.publishEvent(event.id);\r",
 							"        const comment = await api.addComment(event.id, user.id, rnd.getComment());\r",
+							"        await api.publishComment(comment.id);\r",
 							"\r",
 							"        pm.collectionVariables.set(\"uid\", user.id);\r",
 							"        pm.collectionVariables.set(\"cid\", comment.id);\r",
@@ -1682,6 +1683,7 @@
 							"        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
 							"        await api.publishEvent(event.id);\r",
 							"        const comment = await api.addComment(event.id, user.id, rnd.getComment());\r",
+							"        await api.publishComment(comment.id);\r",
 							"        const foundedComment = await api.findComment(comment.id, event.id);\r",
 							"        \r",
 							"        pm.collectionVariables.set(\"eid\", event.id);\r",
@@ -2001,7 +2003,7 @@
 		},
 		{
 			"key": "baseUrl",
-			"value": ""
+			"value": "http://localhost:8080"
 		},
 		{
 			"key": "source",
