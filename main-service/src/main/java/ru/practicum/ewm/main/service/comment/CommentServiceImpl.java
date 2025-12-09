@@ -36,6 +36,9 @@ public class CommentServiceImpl implements CommentService{
 
     @Override
     public List<CommentShortDto> findAllCommentsForEvent(FindAllCommentsParams params) {
+        if(!eventsRepository.existsById(params.getEventId())) {
+            throw new NotFoundException("Событие не найдено");
+        }
         return commentRepository.findAllComments(params).getContent()
                 .stream()
                 .map(CommentShortDtoMapper::toDto)
@@ -44,8 +47,15 @@ public class CommentServiceImpl implements CommentService{
 
     @Override
     public CommentFullDto findCommentById(Long eventId, Long commentId) {
-        return CommentFullDtoMapper.toDto(commentRepository.findById(commentId)
-                .orElseThrow(() -> new NotFoundException("Комментарий не найден")));
+        if(!eventsRepository.existsById(eventId)) {
+            throw new NotFoundException("Событие не найдено");
+        }
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        if(!comment.getStatus().equals(CommentStatus.PUBLISHED)) {
+            throw new NotFoundException("Комментарий еще не опубликован");
+        }
+        return CommentFullDtoMapper.toDto(comment);
     }
 
     @Override

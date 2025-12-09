@@ -1,6 +1,7 @@
 package ru.practicum.ewm.main.controller.comment;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.main.controller.comment.params.FindAllCommentsParams;
 import ru.practicum.ewm.main.model.comment.dto.CommentFullDto;
@@ -30,6 +31,8 @@ public class CommentAuthorizedController {
                 .build();
         return commentService.findCommentsByAuthorId(params);
     }
+
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/events/{eventId}/comments")
     public CommentFullDto writeComment(@PathVariable Long eventId,
                                        @RequestParam Long userId,
@@ -37,6 +40,7 @@ public class CommentAuthorizedController {
         return commentService.addComment(eventId, userId, comment);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/users/{userId}/comments/{commentId}")
     public void removeComment(@PathVariable Long userId, @PathVariable Long commentId){
         commentService.removeCommentById(userId, commentId);
