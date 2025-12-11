@@ -55,7 +55,7 @@ public class CommentServiceImpl implements CommentService {
         if (!comment.getStatus().equals(CommentStatus.PUBLISHED)) {
             throw new NotFoundException("Комментарий еще не опубликован");
         }
-        if(!comment.getEvent().getId().equals(eventId)) {
+        if (!comment.getEvent().getId().equals(eventId)) {
             throw new ConflictException("Комментарий не относится к указанному событию");
         }
         return CommentFullDtoMapper.toDto(comment);
