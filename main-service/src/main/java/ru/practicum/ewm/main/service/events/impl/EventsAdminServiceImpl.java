@@ -79,7 +79,7 @@ public class EventsAdminServiceImpl implements EventsAdminService {
 
         if (updateRequest.getLocation() != null && event.getLocation() != null) {
             event.getLocation().setLat(updateRequest.getLocation().lat());
-            event.getLocation().setLat(updateRequest.getLocation().lon());
+            event.getLocation().setLon(updateRequest.getLocation().lon());
         }
 
         if (updateRequest.getStateAction() != null) {
