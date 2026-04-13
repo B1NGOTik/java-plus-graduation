@@ -6,7 +6,7 @@ spring:
   application:
     name: stats-service
   config:
-    import: configserver:http://localhost:8888
+    import: "configserver:"
   cloud:
     config:
       discovery:
