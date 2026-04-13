@@ -4,24 +4,18 @@ client:
   url: http://localhost:9090
 spring:
   application:
-    name:
-      stats-service
-  output:
-    ansi:
-      enabled: always
-  sql:
-    init:
-      mode: always
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/stat
-    username: stat
-    password: stat
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    properties:
-      hibernate:
-        format_sql: true
+    name: stats-service
+  config:
+    import: configserver:http://localhost:8888
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        serviceId: config-server
+      fail-fast: true
+      retry:
+        useRandomPolicy: true
+        max-interval: 6000
 
 eureka:
   client:
