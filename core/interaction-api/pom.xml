@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>interaction-api</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>23</maven.compiler.source>

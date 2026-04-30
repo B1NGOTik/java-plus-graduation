@@ -21,6 +21,7 @@ import ru.practicum.ewm.main.model.user.User;
 import ru.practicum.ewm.main.repository.comment.CommentRepository;
 import ru.practicum.ewm.main.repository.events.EventsRepository;
 import ru.practicum.ewm.main.repository.user.UserRepository;
+import ru.yandex.practicum.user.UserOperations;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,7 +32,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
+    //private final UserRepository userRepository;
+    private final UserOperations userClient;
     private final EventsRepository eventsRepository;
 
     @Override

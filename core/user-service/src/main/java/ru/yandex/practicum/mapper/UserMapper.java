@@ -6,6 +6,7 @@ import org.mapstruct.MappingConstants;
 import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.user.NewUserRequest;
 import ru.yandex.practicum.user.UserDto;
+import ru.yandex.practicum.user.UserShortDto;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {
@@ -14,4 +15,6 @@ public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
     User toModel(NewUserRequest userDto);
+
+    UserShortDto toShortDto(User user);
 }

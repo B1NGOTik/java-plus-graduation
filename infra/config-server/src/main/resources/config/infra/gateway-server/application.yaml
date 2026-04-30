@@ -11,6 +11,154 @@ spring:
           predicates:
             - Path=/admin/users/**
 
+        - id: event_admin_get_by_id
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/admin/events/{id}
+
+              # /admin/events (GET) с параметрами
+        - id: event_admin_get_list
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/admin/events
+
+        # /admin/events/{eventId} (PATCH)
+        - id: event_admin_update
+          uri: lb://event-service
+          predicates:
+            - Method=PATCH
+            - Path=/admin/events/{eventId}
+
+        # /users/{userId}/events (GET)
+        - id: event_user_get_events
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/users/{userId}/events
+
+        # /users/{userId}/events (POST)
+        - id: event_user_create
+          uri: lb://event-service
+          predicates:
+            - Method=POST
+            - Path=/users/{userId}/events
+
+        # /users/{userId}/events/{eventId} (PATCH)
+        - id: event_user_update
+          uri: lb://event-service
+          predicates:
+            - Method=PATCH
+            - Path=/users/{userId}/events/{eventId}
+
+        # /users/{userId}/events/{eventId} (GET)
+        - id: event_user_get_by_id
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/users/{userId}/events/{eventId}
+
+        # /users/{userId}/events/{eventId}/requests (GET)
+        - id: event_user_get_requests
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/users/{userId}/events/{eventId}/requests
+
+        # /users/{userId}/events/{eventId}/requests (PATCH)
+        - id: event_user_update_requests
+          uri: lb://event-service
+          predicates:
+            - Method=PATCH
+            - Path=/users/{userId}/events/{eventId}/requests
+
+        # public events/{id} (GET)
+        - id: event_public_get_by_id
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/events/{id}
+
+
+        - id: event_public_get_list
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/events  # без {id}
+
+        # ========== REQUEST-SERVICE (RequestOperations) ==========
+        # POST /users/{userId}/requests/{eventId}
+        - id: request_add
+          uri: lb://request-service
+          predicates:
+            - Method=POST
+            - Path=/users/{userId}/requests
+
+        # PATCH /users/{userId}/requests/{requestId}/cancel
+        - id: request_cancel
+          uri: lb://request-service
+          predicates:
+            - Method=PATCH
+            - Path=/users/{userId}/requests/{requestId}/cancel
+
+        # GET /users/{userId}/requests
+        - id: request_get_by_user
+          uri: lb://request-service
+          predicates:
+            - Method=GET
+            - Path=/users/{userId}/requests
+
+        # GET /users/{userId}/requests/{eventId}
+        - id: request_get_by_event
+          uri: lb://request-service
+          predicates:
+            - Method=GET
+            - Path=/users/{userId}/requests/{eventId}
+
+        # PATCH /users/{userId}/requests/{eventId} (обновление статуса)
+        - id: request_update_status
+          uri: lb://request-service
+          predicates:
+            - Method=PATCH
+            - Path=/users/{userId}/requests/{eventId}
+
+        # ========== CATEGORY CONTROLLER ==========
+        # POST /admin/categories
+        - id: category_admin_add
+          uri: lb://event-service
+          predicates:
+            - Method=POST
+            - Path=/admin/categories
+
+        # DELETE /admin/categories/{categoryId}
+        - id: category_admin_delete
+          uri: lb://event-service
+          predicates:
+            - Method=DELETE
+            - Path=/admin/categories/{categoryId}
+
+        # PATCH /admin/categories/{categoryId}
+        - id: category_admin_update
+          uri: lb://event-service
+          predicates:
+            - Method=PATCH
+            - Path=/admin/categories/{categoryId}
+
+        # GET /categories (public)
+        - id: category_public_get_all
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/categories
+
+        # GET /categories/{categoryId}
+        - id: category_public_get_by_id
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/categories/{categoryId}
+
 
 eureka:
   client:

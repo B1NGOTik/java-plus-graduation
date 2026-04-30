@@ -5,3 +5,4 @@ CREATE TABLE IF NOT EXISTS user_schema.users(
     name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE
 );
+

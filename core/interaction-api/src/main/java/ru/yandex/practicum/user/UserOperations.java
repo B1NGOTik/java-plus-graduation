@@ -19,7 +19,14 @@ public interface UserOperations {
                               @RequestParam(defaultValue = "0") int from,
                               @RequestParam(defaultValue = "10") int size);
 
+
+    @GetMapping("/{userId}")
+    public UserDto findById(@PathVariable Long userId);
+
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long userId);
+
+    @GetMapping("/{userId}/short")
+    public UserShortDto findShortDto(@PathVariable Long userId);
 }

@@ -12,6 +12,7 @@ import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.repository.UserRepository;
 import ru.yandex.practicum.user.NewUserRequest;
 import ru.yandex.practicum.user.UserDto;
+import ru.yandex.practicum.user.UserShortDto;
 
 import java.util.List;
 
@@ -36,6 +37,9 @@ public class UserServiceImpl implements UserService {
         }
         User user = userMapper.toModel(newUser);
         User save = userRepository.save(user);
+
+        log.info("Создан пользователь: name={}, id={}",
+                save.getName(), save.getId());
 
         return userMapper.toDto(save);
     }
@@ -63,12 +67,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUserById(Long userId) {
-
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("Пользователь с id={} не найден при создании события", userId);
                     return new NotFoundException("User with id=" + userId + " not found");
                 });
 
+    }
+
+    @Override
+    public UserDto findUserDtoById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("Пользователь с id={} не найден при создании события", userId);
+                    return new NotFoundException("User with id=" + userId + " not found");
+                });
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    public UserShortDto findUserShortDtoById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("Пользователь с id={} не найден при создании события", userId);
+                    return new NotFoundException("User with id=" + userId + " not found");
+                });
+        return userMapper.toShortDto(user);
     }
 }

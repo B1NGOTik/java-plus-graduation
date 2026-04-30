@@ -8,6 +8,7 @@ import ru.yandex.practicum.service.UserService;
 import ru.yandex.practicum.user.NewUserRequest;
 import ru.yandex.practicum.user.UserDto;
 import ru.yandex.practicum.user.UserOperations;
+import ru.yandex.practicum.user.UserShortDto;
 
 import java.util.List;
 
@@ -28,7 +29,17 @@ public class UserController implements UserOperations {
     }
 
     @Override
+    public UserDto findById(Long userId) {
+        return userService.findUserDtoById(userId);
+    }
+
+    @Override
     public void delete(Long userId) {
         userService.deleteUser(userId);
+    }
+
+    @Override
+    public UserShortDto findShortDto(Long userId) {
+        return userService.findUserShortDtoById(userId);
     }
 }
