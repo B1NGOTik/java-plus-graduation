@@ -11,7 +11,7 @@ import ru.yandex.practicum.repository.compilation.CompilationEventCompositeKey;
 @AllArgsConstructor
 @Getter
 @Setter
-@Table(name = "compilation_event")
+@Table(name = "compilation_event", schema = "ewm_events")
 @IdClass(CompilationEventCompositeKey.class)
 public class CompilationEvent {
     @Id

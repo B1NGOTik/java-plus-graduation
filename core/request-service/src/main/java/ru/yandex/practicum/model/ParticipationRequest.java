@@ -8,7 +8,7 @@ import ru.yandex.practicum.request.ParticipationRequestStatus;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "requests")
+@Table(name = "requests", schema = "ewm_requests")
 @Builder
 @Getter
 @Setter

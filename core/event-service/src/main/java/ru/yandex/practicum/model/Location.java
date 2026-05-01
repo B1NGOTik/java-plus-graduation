@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "locations", schema = "event")
+@Table(name = "locations", schema = "ewm_events")
 public class Location {
 
     @Id

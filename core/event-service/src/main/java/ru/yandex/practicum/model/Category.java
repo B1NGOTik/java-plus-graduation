@@ -5,7 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "categories", schema = "event")
+@Table(name = "categories", schema = "ewm_events")
 @Builder
 @Getter
 @Setter

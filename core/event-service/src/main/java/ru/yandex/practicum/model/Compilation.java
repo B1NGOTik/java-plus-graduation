@@ -8,7 +8,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "compilations", schema = "event")
+@Table(name = "compilations", schema = "ewm_events")
 @Builder
 public class Compilation {
     @Id
