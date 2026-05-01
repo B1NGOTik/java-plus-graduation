@@ -15,48 +15,50 @@ import java.util.List;
 
 @FeignClient(name = "event-service")
 public interface EventOperations {
-    @GetMapping("admin/events/{id}")
-    public EventFullDto getById(@PathVariable Long id);
 
-    @GetMapping("/admin/events")
-    public List<EventFullDto> getEvents(@Valid @ModelAttribute AdminEventSearchParams params);
+    String ADMIN_PATH = "/admin/events";
+    String USER_PATH = "/users/{userId}/events";
+    String PUBLIC_PATH = "/events";
 
-    @PatchMapping("/admin/events/{eventId}")
-    public EventFullDto updateEvent(@PathVariable Long eventId,
-                                    @Valid @RequestBody UpdateEventAdminRequest updateRequest);
+    @GetMapping(ADMIN_PATH + "/{id}")
+    EventFullDto getById(@PathVariable Long id);
 
-    @GetMapping("/users/{userId}/events")
-    public List<EventShortDto> getUserEvents(@PathVariable Long userId,
-                                             @RequestParam(defaultValue = "0") Integer from,
-                                             @RequestParam(defaultValue = "10") Integer size);
+    @GetMapping(ADMIN_PATH)
+    List<EventFullDto> getEvents(@Valid @ModelAttribute AdminEventSearchParams params);
 
-    @PostMapping("/users/{userId}/events")
+    @PatchMapping(ADMIN_PATH + "/{eventId}")
+    EventFullDto updateEvent(@PathVariable Long eventId,
+                             @Valid @RequestBody UpdateEventAdminRequest updateRequest);
+
+    @GetMapping(USER_PATH)
+    List<EventShortDto> getUserEvents(@PathVariable Long userId,
+                                      @RequestParam(defaultValue = "0") Integer from,
+                                      @RequestParam(defaultValue = "10") Integer size);
+
+    @PostMapping(USER_PATH)
     @ResponseStatus(HttpStatus.CREATED)
-    public EventFullDto createEvent(@PathVariable Long userId,
-                                    @Valid @RequestBody NewEventDto newEventDto);
+    EventFullDto createEvent(@PathVariable Long userId,
+                             @Valid @RequestBody NewEventDto newEventDto);
 
-    @PatchMapping("/users/{userId}/events/{eventId}")
-    public EventFullDto updateUserEvent(@PathVariable Long userId,
-                                        @PathVariable Long eventId,
-                                        @Valid @RequestBody UpdateEventUserRequest updateRequest);
+    @PatchMapping(USER_PATH + "/{eventId}")
+    EventFullDto updateUserEvent(@PathVariable Long userId,
+                                 @PathVariable Long eventId,
+                                 @Valid @RequestBody UpdateEventUserRequest updateRequest);
 
-    @GetMapping("/users/{userId}/events/{eventId}")
-    public EventFullDto getUserEvent(@PathVariable Long userId,
-                                     @PathVariable Long eventId);
+    @GetMapping(USER_PATH + "/{eventId}")
+    EventFullDto getUserEvent(@PathVariable Long userId,
+                              @PathVariable Long eventId);
 
-    @GetMapping("/users/{userId}/events/{eventId}/requests")
-    public List<ParticipationRequestDto> getRequests(@PathVariable Long userId,
-                                                     @PathVariable Long eventId);
+    @GetMapping(USER_PATH + "/{eventId}/requests")
+    List<ParticipationRequestDto> getRequests(@PathVariable Long userId,
+                                              @PathVariable Long eventId);
 
-    @PatchMapping("/users/{userId}/events/{eventId}/requests")
-    public EventRequestStatusUpdateResult rejectingRequest(@PathVariable Long userId,
-                                        @PathVariable Long eventId,
-                                        @RequestBody @Valid EventRequestStatusUpdateRequest updateRequest);
+    @PatchMapping(USER_PATH + "/{eventId}/requests")
+    EventRequestStatusUpdateResult rejectingRequest(@PathVariable Long userId,
+                                                    @PathVariable Long eventId,
+                                                    @RequestBody @Valid EventRequestStatusUpdateRequest updateRequest);
 
-    @GetMapping("/events/{id}")
-    public EventFullDto getByIdPublic(@PathVariable Long id, HttpServletRequest request);
+    @GetMapping(PUBLIC_PATH + "/{id}")
+    EventFullDto getByIdPublic(@PathVariable Long id, HttpServletRequest request);
 
-    /*@GetMapping("/events")
-    public List<EventShortDto> getEvents(@ModelAttribute @Valid PublicEventSearchParams params,
-                                         HttpServletRequest request);*/
 }

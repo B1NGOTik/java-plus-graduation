@@ -1,10 +1,8 @@
 package ru.yandex.practicum.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -12,13 +10,14 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "locations", schema = "ewm_events")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Location {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
-    private Double lat;
-    private Double lon;
+    Double lat;
+    Double lon;
 
 }
