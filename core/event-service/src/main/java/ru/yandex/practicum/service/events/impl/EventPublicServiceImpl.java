@@ -14,11 +14,13 @@ import ru.yandex.practicum.event.events.EventFullDto;
 import ru.yandex.practicum.event.events.EventShortDto;
 import ru.yandex.practicum.event.events.enums.EventState;
 import ru.yandex.practicum.event.events.params.PublicEventSearchParams;
+import ru.yandex.practicum.exception.ConflictException;
 import ru.yandex.practicum.exception.NotFoundException;
 import ru.yandex.practicum.exception.ValidationException;
 import ru.yandex.practicum.mapper.events.EventsMapper;
 import ru.yandex.practicum.model.Events;
 import ru.yandex.practicum.repository.events.EventsRepository;
+import ru.yandex.practicum.request.RequestOperations;
 import ru.yandex.practicum.service.events.EventPublicService;
 import ru.yandex.practicum.user.UserOperations;
 import ru.yandex.practicum.user.UserShortDto;
@@ -41,6 +43,7 @@ public class EventPublicServiceImpl implements EventPublicService {
     private final EventsMapper eventsMapper;
     private final StatsClient statsClient;
     private final UserOperations userClient;
+    private final RequestOperations requestClient;
     //private final ParticipationRequestValidator requestValidator;
 
 
@@ -110,11 +113,12 @@ public class EventPublicServiceImpl implements EventPublicService {
     @Override
     public EventFullDto getById(Long eventId) {
         log.info("Админский запрос события по id={}", eventId);
-        Events events = eventsRepository.findByIdAndState(eventId, EventState.PUBLISHED)
-                .orElseThrow(() -> new NotFoundException("Event not found"));
+        Events events = eventsRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Событие не найдено"));
         UserShortDto initiator = getInitiator(events.getInitiatorId());
         EventFullDto dto = eventsMapper.toFullDto(events);
         dto.setInitiator(initiator);
+        dto.setConfirmedRequests(requestClient.getConfirmedRequests(eventId));
         return dto;
     }
 

@@ -140,6 +140,10 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         EventFullDto event = participationRequestValidator.checkEventForInitiator(userId, eventId);
 
         List<Long> requestIds = updateRequest.getRequestIds();
+        if (event.getConfirmedRequests().intValue() == event.getParticipantLimit()
+                && updateRequest.getStatus().equals(ParticipationRequestStatus.CONFIRMED)) {
+            throw new ConflictException("Достигнут лимит заявок на это событие");
+        }
         if (requestIds == null || requestIds.isEmpty()) {
             log.warn("Пустой список requestIds при изменении статуса заявок для eventId={}", eventId);
             throw new ConflictException("RequestIds must not be empty");
@@ -260,5 +264,19 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
         log.warn("Некорректный статус={} в EventRequestStatusUpdateRequest", action);
         throw new ConflictException("Unknown status: " + action);
+    }
+
+    @Override
+    public long countConfirmedRequests(Long eventId) {
+         long result = requestRepository.countByEventIdAndStatus(eventId, ParticipationRequestStatus.CONFIRMED);
+         log.info("В методе countByEventIdAndStatus возвращено значение {}", result);
+         return result;
+    }
+
+    @Override
+    public List<ParticipationRequestDto> findAllByIds(List<Long> ids) {
+        return requestRepository.findAllById(ids).stream()
+                .map(ParticipationRequestMapper::toDto)
+                .toList();
     }
 }

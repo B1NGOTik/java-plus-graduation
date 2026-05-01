@@ -16,6 +16,7 @@ import ru.yandex.practicum.model.Category;
 import ru.yandex.practicum.model.Events;
 import ru.yandex.practicum.repository.CategoryRepository;
 import ru.yandex.practicum.repository.events.EventsRepository;
+import ru.yandex.practicum.request.RequestOperations;
 import ru.yandex.practicum.service.events.EventsAdminService;
 import ru.yandex.practicum.user.UserOperations;
 import ru.yandex.practicum.user.UserShortDto;
@@ -33,6 +34,7 @@ public class EventsAdminServiceImpl implements EventsAdminService {
     private final EventsRepository eventsRepository;
     private final CategoryRepository categoryRepository;
     private final UserOperations userClient;
+    private final RequestOperations requestClient;
 
     @Override
     public List<EventFullDto> getEvents(AdminEventSearchParams params) {
@@ -41,17 +43,16 @@ public class EventsAdminServiceImpl implements EventsAdminService {
 
         List<Events> found = eventsRepository.findAdminEvents(params, pageable);
 
-        List<EventFullDto> dtos = found.stream()
+        //requestValidator.fillConfirmedRequests(dtos);
+        return found.stream()
                 .map(event -> {
                     UserShortDto initiator = getInitiator(event.getInitiatorId());
                     EventFullDto fullDto = mapper.toFullDto(event);
                     fullDto.setInitiator(initiator);
+                    fullDto.setConfirmedRequests(requestClient.getConfirmedRequests(fullDto.getId()));
                     return fullDto;
                 })
                 .toList();
-
-        //requestValidator.fillConfirmedRequests(dtos);
-        return dtos;
     }
 
     @Override
@@ -103,7 +104,7 @@ public class EventsAdminServiceImpl implements EventsAdminService {
         }
         Events saved = eventsRepository.save(event);
         EventFullDto dto = mapper.toFullDto(saved);
-        dto.setInitiator(getInitiator(eventId));
+        dto.setInitiator(getInitiator(saved.getInitiatorId()));
         return dto;
     }
 

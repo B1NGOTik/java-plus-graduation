@@ -18,4 +18,8 @@ public interface ParticipationRequestService {
     EventRequestStatusUpdateResult changeRequestStatus(Long userId,
                                                        Long eventId,
                                                        EventRequestStatusUpdateRequest updateRequest);
+
+    long countConfirmedRequests(Long eventId);
+
+    List<ParticipationRequestDto> findAllByIds(List<Long> ids);
 }

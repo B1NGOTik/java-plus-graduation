@@ -28,4 +28,10 @@ public interface RequestOperations {
     EventRequestStatusUpdateResult updateRequestStatus(@PathVariable("userId") Long userId,
                                                        @PathVariable("eventId") Long eventId,
                                                        @RequestBody EventRequestStatusUpdateRequest status);
+
+    @GetMapping("/requests/{eventId}/confirmed")
+    long getConfirmedRequests(@PathVariable("eventId") Long eventId);
+
+    @GetMapping("/requests/ids")
+    List<ParticipationRequestDto> findByIds(@RequestBody List<Long> ids);
 }

@@ -159,6 +159,46 @@ spring:
             - Method=GET
             - Path=/categories/{categoryId}
 
+        # ========== COMPILATIONS CONTROLLER ==========
+        - id: compilation_admin_save
+          uri: lb://event-service
+          predicates:
+            - Method=POST
+            - Path=/admin/compilations
+
+        - id: compilation_admin_patch
+          uri: lb://event-service
+          predicates:
+            - Method=PATCH
+            - Path=/admin/compilations/{compId}
+
+        - id: compilation_admin_delete
+          uri: lb://event-service
+          predicates:
+            - Method=DELETE
+            - Path=/admin/compilations/{compId}
+
+        # ========== COMPILATION SERVICE (Public) ==========
+        - id: compilation_public_find_by_id
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/compilations/{compId}
+
+        - id: compilation_public_find_all
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/compilations
+
+        # ========== COMPILATION SERVICE (Admin) - Альтернативные пути ==========
+        # Если есть другие методы для компиляций
+        - id: compilation_admin_get_all
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/admin/compilations
+
 
 eureka:
   client:

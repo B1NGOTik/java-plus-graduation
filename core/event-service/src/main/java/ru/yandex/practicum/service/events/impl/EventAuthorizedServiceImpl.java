@@ -210,7 +210,11 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
         Events event = eventsRepository.findByIdAndState(eventId, EventState.PUBLISHED)
                 .orElseThrow( () -> new NotFoundException("Событие не найдено"));
         checkInitiator(userId, eventId, event);
-
+        long confirmedRequests = requestClient.getConfirmedRequests(eventId);
+        if(confirmedRequests == event.getParticipantLimit()
+                && updateRequest.getStatus().equals(ParticipationRequestStatus.CONFIRMED)) {
+            throw new ConflictException("Достигнут лимит заявок на событие");
+        }
         return requestClient.updateRequestStatus(userId, eventId, updateRequest);
     }
 
