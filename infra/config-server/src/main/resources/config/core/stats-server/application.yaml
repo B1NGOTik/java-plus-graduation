@@ -17,9 +17,9 @@ spring:
       mode: always
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/stat
-    username: stat
-    password: stat
+    url: jdbc:postgresql://localhost:5432/postgres?currentSchema=ewm_stats
+    username: postgres
+    password: password
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:

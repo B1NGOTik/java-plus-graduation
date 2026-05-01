@@ -1,25 +1,204 @@
 server:
-  port: 0
+  port: 8080
 spring:
   cloud:
     gateway:
       discovery.locator.enabled: true
       routes:
-        - id: main_service_route
-          uri: lb://main-service
+        - id: user_service_route
+          uri: lb://user-service #http://localhost:
 
           predicates:
-            - Path=/main-service/**
-          filters:
-            - PrefixPath=/api/v1
+            - Path=/admin/users/**
 
-        - id: stats_service_route
-          uri: lb://stats-service
-
+        - id: event_admin_get_by_id
+          uri: lb://event-service
           predicates:
-            - Path=/stats-service/**
-          filters:
-            - PrefixPath=/api/v1
+            - Method=GET
+            - Path=/admin/events/{id}
+
+              # /admin/events (GET) с параметрами
+        - id: event_admin_get_list
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/admin/events
+
+        # /admin/events/{eventId} (PATCH)
+        - id: event_admin_update
+          uri: lb://event-service
+          predicates:
+            - Method=PATCH
+            - Path=/admin/events/{eventId}
+
+        # /users/{userId}/events (GET)
+        - id: event_user_get_events
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/users/{userId}/events
+
+        # /users/{userId}/events (POST)
+        - id: event_user_create
+          uri: lb://event-service
+          predicates:
+            - Method=POST
+            - Path=/users/{userId}/events
+
+        # /users/{userId}/events/{eventId} (PATCH)
+        - id: event_user_update
+          uri: lb://event-service
+          predicates:
+            - Method=PATCH
+            - Path=/users/{userId}/events/{eventId}
+
+        # /users/{userId}/events/{eventId} (GET)
+        - id: event_user_get_by_id
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/users/{userId}/events/{eventId}
+
+        # /users/{userId}/events/{eventId}/requests (GET)
+        - id: event_user_get_requests
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/users/{userId}/events/{eventId}/requests
+
+        # /users/{userId}/events/{eventId}/requests (PATCH)
+        - id: event_user_update_requests
+          uri: lb://event-service
+          predicates:
+            - Method=PATCH
+            - Path=/users/{userId}/events/{eventId}/requests
+
+        # public events/{id} (GET)
+        - id: event_public_get_by_id
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/events/{id}
+
+
+        - id: event_public_get_list
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/events  # без {id}
+
+        # ========== REQUEST-SERVICE (RequestOperations) ==========
+        # POST /users/{userId}/requests/{eventId}
+        - id: request_add
+          uri: lb://request-service
+          predicates:
+            - Method=POST
+            - Path=/users/{userId}/requests
+
+        # PATCH /users/{userId}/requests/{requestId}/cancel
+        - id: request_cancel
+          uri: lb://request-service
+          predicates:
+            - Method=PATCH
+            - Path=/users/{userId}/requests/{requestId}/cancel
+
+        # GET /users/{userId}/requests
+        - id: request_get_by_user
+          uri: lb://request-service
+          predicates:
+            - Method=GET
+            - Path=/users/{userId}/requests
+
+        # GET /users/{userId}/requests/{eventId}
+        - id: request_get_by_event
+          uri: lb://request-service
+          predicates:
+            - Method=GET
+            - Path=/users/{userId}/requests/{eventId}
+
+        # PATCH /users/{userId}/requests/{eventId} (обновление статуса)
+        - id: request_update_status
+          uri: lb://request-service
+          predicates:
+            - Method=PATCH
+            - Path=/users/{userId}/requests/{eventId}
+
+        # ========== CATEGORY CONTROLLER ==========
+        # POST /admin/categories
+        - id: category_admin_add
+          uri: lb://event-service
+          predicates:
+            - Method=POST
+            - Path=/admin/categories
+
+        # DELETE /admin/categories/{categoryId}
+        - id: category_admin_delete
+          uri: lb://event-service
+          predicates:
+            - Method=DELETE
+            - Path=/admin/categories/{categoryId}
+
+        # PATCH /admin/categories/{categoryId}
+        - id: category_admin_update
+          uri: lb://event-service
+          predicates:
+            - Method=PATCH
+            - Path=/admin/categories/{categoryId}
+
+        # GET /categories (public)
+        - id: category_public_get_all
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/categories
+
+        # GET /categories/{categoryId}
+        - id: category_public_get_by_id
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/categories/{categoryId}
+
+        # ========== COMPILATIONS CONTROLLER ==========
+        - id: compilation_admin_save
+          uri: lb://event-service
+          predicates:
+            - Method=POST
+            - Path=/admin/compilations
+
+        - id: compilation_admin_patch
+          uri: lb://event-service
+          predicates:
+            - Method=PATCH
+            - Path=/admin/compilations/{compId}
+
+        - id: compilation_admin_delete
+          uri: lb://event-service
+          predicates:
+            - Method=DELETE
+            - Path=/admin/compilations/{compId}
+
+        # ========== COMPILATION SERVICE (Public) ==========
+        - id: compilation_public_find_by_id
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/compilations/{compId}
+
+        - id: compilation_public_find_all
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/compilations
+
+        # ========== COMPILATION SERVICE (Admin) - Альтернативные пути ==========
+        # Если есть другие методы для компиляций
+        - id: compilation_admin_get_all
+          uri: lb://event-service
+          predicates:
+            - Method=GET
+            - Path=/admin/compilations
+
 
 eureka:
   client:

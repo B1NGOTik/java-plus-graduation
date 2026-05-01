@@ -1,0 +1,44 @@
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+
+  application:
+    name: event-service
+
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres?currentSchema=ewm_events
+    username: postgres
+    password: password
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        format_sql: true
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+
+server:
+  port: 0
+
+logging:
+  level:
+    root: INFO
+    org.hibernate: ERROR
+    org.hibernate.SQL: OFF
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
