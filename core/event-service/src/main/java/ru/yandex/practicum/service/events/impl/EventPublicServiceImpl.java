@@ -1,5 +1,6 @@
 package ru.yandex.practicum.service.events.impl;
 
+import com.google.protobuf.Timestamp;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,14 +8,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.practicum.StatsClient;
-import ru.practicum.ewm.stats.dto.EndpointHitDto;
-import ru.practicum.ewm.stats.dto.ViewStatsDto;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.AnalyzerClient;
+import ru.practicum.CollectorClient;
+
+import ru.practicum.ewm.stats.proto.*;
 import ru.yandex.practicum.event.events.EventFullDto;
 import ru.yandex.practicum.event.events.EventShortDto;
 import ru.yandex.practicum.event.events.enums.EventState;
 import ru.yandex.practicum.event.events.params.PublicEventSearchParams;
-import ru.yandex.practicum.exception.ConflictException;
 import ru.yandex.practicum.exception.NotFoundException;
 import ru.yandex.practicum.exception.ValidationException;
 import ru.yandex.practicum.mapper.events.EventsMapper;
@@ -25,11 +27,14 @@ import ru.yandex.practicum.service.events.EventPublicService;
 import ru.yandex.practicum.user.UserOperations;
 import ru.yandex.practicum.user.UserShortDto;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -41,17 +46,17 @@ public class EventPublicServiceImpl implements EventPublicService {
 
     private final EventsRepository eventsRepository;
     private final EventsMapper eventsMapper;
-    private final StatsClient statsClient;
+
     private final UserOperations userClient;
     private final RequestOperations requestClient;
-    //private final ParticipationRequestValidator requestValidator;
+    private final CollectorClient collectorClient;
+    private final AnalyzerClient analyzerClient;
 
 
     public List<EventShortDto> getEvents(PublicEventSearchParams params,
                                          HttpServletRequest request) {
         log.info("Поиск публичных событий params={}", params);
         validateSearchParams(params);
-        saveHit(request);
 
         Pageable pageable = PageRequest.of(params.getFrom() / params.getSize(), params.getSize());
         Page<Events> page = eventsRepository.findPublicEvents(params, pageable);
@@ -61,20 +66,20 @@ public class EventPublicServiceImpl implements EventPublicService {
             return List.of();
         }
 
-        List<String> uris = events.stream()
-                .map(e -> "/events/" + e.getId())
-                .toList();
-        Map<String, Long> viewsByUri = getViewsForUris(uris);
+        List<Long> eventIds = new ArrayList<>();
+        for(Events event : events) {
+            eventIds.add(event.getId());
+        }
 
+        Map<Long, Double> ratings = getRatingsForEvents(eventIds);
 
         return events.stream()
                 .map(e -> {
                     EventShortDto dto = eventsMapper.toShortDto(e);
                     UserShortDto initiator = getInitiator(e.getInitiatorId());
                     String uri = "/events/" + e.getId();
+                    Double rating = ratings.get(dto.id());
 
-
-                    long views = viewsByUri.getOrDefault(uri, 0L);
                     return new EventShortDto(
                             dto.id(),
                             dto.title(),
@@ -83,7 +88,7 @@ public class EventPublicServiceImpl implements EventPublicService {
                             initiator,
                             dto.paid(),
                             dto.eventDate(),
-                            views,
+                            rating,
                             dto.confirmedRequests()
                     );
                 })
@@ -92,21 +97,25 @@ public class EventPublicServiceImpl implements EventPublicService {
 
 
     @Override
-    public EventFullDto getById(Long eventId, HttpServletRequest request) {
+    public EventFullDto getById(Long eventId, HttpServletRequest request, Long userId) {
         log.info("Публичный запрос события по id={}", eventId);
-        saveHit(request);
         Events events = eventsRepository.findByIdAndState(eventId, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
 
+        UserActionProto action = UserActionProto.newBuilder()
+                .setUserId(userId)
+                .setEventId(eventId)
+                .setActionType(ActionTypeProto.VIEW)
+                .setTimestamp(Timestamp.newBuilder()
+                        .setSeconds(Instant.now().getEpochSecond())
+                        .setNanos(Instant.now().getNano())
+                        .build())
+                .build();
+
+        collectorClient.sendUserAction(action);
         UserShortDto initiator = getInitiator(events.getInitiatorId());
-        String uri = request.getRequestURI();
-        long views = getViewsForUris(List.of(uri)).getOrDefault(uri, 0L);
-        log.debug("Для события id={} по uri='{}' получено просмотров={}", eventId, uri, views);
         EventFullDto dto = eventsMapper.toFullDto(events);
-        //requestValidator.fillConfirmedRequests(dto);
-        dto.setViews(views);
         dto.setInitiator(initiator);
-        log.info("Событие отдано клиенту: id={}, views={}", dto.getId(), dto.getViews());
         return dto;
     }
 
@@ -120,39 +129,6 @@ public class EventPublicServiceImpl implements EventPublicService {
         dto.setInitiator(initiator);
         dto.setConfirmedRequests(requestClient.getConfirmedRequests(eventId));
         return dto;
-    }
-
-    private Map<String, Long> getViewsForUris(List<String> uris) {
-        String start = "2000-01-01 00:00:00";
-        String end = LocalDateTime.now().format(FORMATTER);
-
-        log.info("Запрашиваем статистику: start={}, end={}, uris={}", start, end, uris);
-
-        List<ViewStatsDto> stats = statsClient.getStats(start, end, uris, true);
-
-        Map<String, Long> result = new HashMap<>();
-        for (ViewStatsDto stat : stats) {
-            result.put(stat.getUri(), stat.getHits());
-        }
-        return result;
-    }
-
-
-    //Отправка хита в сервис статистики.
-    private void saveHit(HttpServletRequest request) {
-        EndpointHitDto hit = new EndpointHitDto(
-                null,
-                "ewm-main-service",
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                LocalDateTime.now().format(FORMATTER)
-        );
-        log.info("Отправляем хит в stats-сервис: {}", hit);
-        try {
-            statsClient.saveHit(hit);
-        } catch (Exception e) {
-            log.error("Не удалось отправить хит в stats-сервис: {}", e.getMessage(), e);
-        }
     }
 
     private void validateSearchParams(PublicEventSearchParams params) {
@@ -172,5 +148,62 @@ public class EventPublicServiceImpl implements EventPublicService {
         UserShortDto result = userClient.findShortDto(initiatorId);
         log.info("В методе получения организатора события получен пользователь с id {}", result.id());
         return result;
+    }
+
+    private Map<Long, Double> getRatingsForEvents(List<Long> eventIds) {
+        if (eventIds.isEmpty()) return Map.of();
+
+        Map<Long, Double> ratings = eventIds.stream()
+                .collect(Collectors.toMap(id -> id, id -> 0.0));
+
+        try {
+            InteractionsCountRequestProto request = InteractionsCountRequestProto.newBuilder()
+                    .addAllEventId(eventIds)
+                    .build();
+
+            analyzerClient.getInteractionsCount(request)
+                    .forEach(proto -> ratings.put(proto.getEventId(), proto.getScore()));
+        } catch (Exception e) {
+            log.warn("Не удалось получить рейтинги для событий", e);
+        }
+
+        return ratings;
+    }
+
+    @Transactional
+    @Override
+    public void likeEvent(Long userId, Long eventId) {
+        log.info("Лайк события eventId={} от пользователя userId={}", eventId, userId);
+
+        EventFullDto event = getById(eventId);
+
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new ValidationException("Нельзя лайкнуть неопубликованное событие");
+        }
+
+
+        UserActionProto action = UserActionProto.newBuilder()
+                .setUserId(userId)
+                .setEventId(eventId)
+                .setActionType(ActionTypeProto.LIKE)
+                .setTimestamp(Timestamp.newBuilder()
+                        .setSeconds(Instant.now().getEpochSecond())
+                        .setNanos(Instant.now().getNano())
+                        .build())
+                .build();
+
+        collectorClient.sendUserAction(action);
+    }
+
+    @Override
+    public Stream<RecommendedEventProto> getRecommendations(Long userId, int maxResults) {
+        log.info("Получение рекомендаций для пользователя userId={}, maxResults={}", userId, maxResults);
+
+        UserPredictionsRequestProto request = UserPredictionsRequestProto.newBuilder()
+                .setUserId(userId)
+                .setMaxResults(maxResults)
+                .build();
+
+        return analyzerClient.getRecommendationsForUser(request);
     }
 }

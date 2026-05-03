@@ -65,7 +65,7 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
                             initiator,
                             dto.paid(),
                             dto.eventDate(),
-                            dto.views(),
+                            dto.rating(),
                             dto.confirmedRequests()
                     );
                 })
@@ -239,12 +239,6 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
         return result;
     }
 
-//    private void validateRequestIdsNotEmpty(List<Long> requestIds, Long eventId) {
-//        if (requestIds == null || requestIds.isEmpty()) {
-//            log.warn("Пустой список requestIds при изменении статуса заявок для eventId={}", eventId);
-//            throw new ConflictException("RequestIds must not be empty");
-//        }
-//    }
 
 
 }
