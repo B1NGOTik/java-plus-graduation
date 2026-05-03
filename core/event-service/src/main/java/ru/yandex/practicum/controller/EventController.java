@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 @RestController
 @Slf4j
 public class EventController implements EventOperations {
+    private static final String USER_ID_HEADER = "X-EWM-USER-ID";
     private final EventsAdminService adminService;
     private final EventAuthorizedService authorizedService;
     private final EventPublicService publicService;
@@ -87,14 +88,14 @@ public class EventController implements EventOperations {
     @PutMapping("/{eventId}/like")
     public void likeEvent(
             @PathVariable Long eventId,
-            @RequestHeader("X-EWM-USER-ID") Long userId) {
+            @RequestHeader(USER_ID_HEADER) Long userId) {
 
         publicService.likeEvent(userId, eventId);
     }
 
     @GetMapping("/recommendations")
     public Stream<RecommendedEventProto> getRecommendations(
-            @RequestHeader("X-EWM-USER-ID") Long userId,
+            @RequestHeader(USER_ID_HEADER) Long userId,
             @RequestParam(defaultValue = "10") int maxResults) {
 
         return publicService.getRecommendations(userId, maxResults);

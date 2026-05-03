@@ -43,7 +43,6 @@ public class EventsAdminServiceImpl implements EventsAdminService {
 
         List<Events> found = eventsRepository.findAdminEvents(params, pageable);
 
-        //requestValidator.fillConfirmedRequests(dtos);
         return found.stream()
                 .map(event -> {
                     UserShortDto initiator = getInitiator(event.getInitiatorId());

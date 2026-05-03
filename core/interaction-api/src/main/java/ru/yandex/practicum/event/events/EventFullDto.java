@@ -2,6 +2,7 @@ package ru.yandex.practicum.event.events;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.event.category.CategoryDto;
 import ru.yandex.practicum.event.events.enums.EventState;
 import ru.yandex.practicum.event.location.LocationDto;
@@ -14,56 +15,57 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventFullDto {
 
     // краткое описание
-    private String annotation;
+    String annotation;
 
     // категория
-    private CategoryDto category;
+    CategoryDto category;
 
     // РАСЧЁТНОЕ поле (не хранится в Event)
-    private Long confirmedRequests;
+    Long confirmedRequests;
 
     // дата создания
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createdOn;
+    LocalDateTime createdOn;
 
     // полное описание
-    private String description;
+    String description;
 
     // дата проведения
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime eventDate;
+    LocalDateTime eventDate;
 
     // идентификатор
-    private Long id;
+    Long id;
 
     // инициатор события
-    private UserShortDto initiator;
+    UserShortDto initiator;
 
     // широта/долгота
-    private LocationDto location;
+    LocationDto location;
 
     // платное ли событие
-    private Boolean paid;
+    Boolean paid;
 
     // лимит участников (0 — без лимита)
-    private Integer participantLimit;
+    Integer participantLimit;
 
     // дата публикации
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime publishedOn;
+    LocalDateTime publishedOn;
 
     // нужна ли премодерация заявок
-    private Boolean requestModeration;
+    Boolean requestModeration;
 
     // PENDING / PUBLISHED / CANCELED
-    private EventState state;
+    EventState state;
 
     // заголовок
-    private String title;
+    String title;
 
     // РАСЧЁТНОЕ поле (не хранится в Event)
-    private Double rating;
+    Double rating;
 }

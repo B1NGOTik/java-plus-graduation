@@ -131,39 +131,6 @@ public class EventPublicServiceImpl implements EventPublicService {
         return dto;
     }
 
-    /*private Map<String, Long> getViewsForUris(List<String> uris) {
-        String start = "2000-01-01 00:00:00";
-        String end = LocalDateTime.now().format(FORMATTER);
-
-        log.info("Запрашиваем статистику: start={}, end={}, uris={}", start, end, uris);
-
-        List<ViewStatsDto> stats = statsClient.getStats(start, end, uris, true);
-
-        Map<String, Long> result = new HashMap<>();
-        for (ViewStatsDto stat : stats) {
-            result.put(stat.getUri(), stat.getHits());
-        }
-        return result;
-    }*/
-
-
-    /*//Отправка хита в сервис статистики.
-    private void saveHit(HttpServletRequest request) {
-        EndpointHitDto hit = new EndpointHitDto(
-                null,
-                "ewm-main-service",
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                LocalDateTime.now().format(FORMATTER)
-        );
-        log.info("Отправляем хит в stats-сервис: {}", hit);
-        try {
-            //statsClient.saveHit(hit);
-        } catch (Exception e) {
-            log.error("Не удалось отправить хит в stats-сервис: {}", e.getMessage(), e);
-        }
-    }*/
-
     private void validateSearchParams(PublicEventSearchParams params) {
         LocalDateTime start = params.getRangeStart();
         LocalDateTime end = params.getRangeEnd();
@@ -214,9 +181,6 @@ public class EventPublicServiceImpl implements EventPublicService {
             throw new ValidationException("Нельзя лайкнуть неопубликованное событие");
         }
 
-        /*if (!hasUserVisitedEvent(userId, eventId)) {
-            throw new ValidationException("Нельзя лайкнуть непосещенное мероприятие");
-        }*/
 
         UserActionProto action = UserActionProto.newBuilder()
                 .setUserId(userId)
