@@ -9,14 +9,14 @@ public interface EventsMapper {
 
     @Mapping(target = "category",
             expression = "java(new CategoryDto(event.getCategory().getId(), event.getCategory().getName()))")
-    @Mapping(target = "views", ignore = true)
+    @Mapping(target = "rating", ignore = true)
     @Mapping(target = "confirmedRequests", ignore = true)
     EventShortDto toShortDto(Events event);
 
 
     @Mapping(target = "category",
             expression = "java(new CategoryDto(event.getCategory().getId(), event.getCategory().getName()))")
-    @Mapping(target = "views", ignore = true)
+    @Mapping(target = "rating", ignore = true)
     @Mapping(target = "initiator", ignore = true)
     @Mapping(target = "confirmedRequests", ignore = true)
     EventFullDto toFullDto(Events event);

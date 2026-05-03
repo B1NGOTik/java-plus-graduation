@@ -59,6 +59,7 @@ public interface EventOperations {
                                                     @RequestBody @Valid EventRequestStatusUpdateRequest updateRequest);
 
     @GetMapping(PUBLIC_PATH + "/{id}")
-    EventFullDto getByIdPublic(@PathVariable Long id, HttpServletRequest request);
+    EventFullDto getByIdPublic(@PathVariable Long id, HttpServletRequest request,
+                               @RequestHeader("X-EWM-USER-ID") Long userId);
 
 }

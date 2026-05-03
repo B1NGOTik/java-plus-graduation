@@ -65,5 +65,5 @@ public class EventFullDto {
     private String title;
 
     // РАСЧЁТНОЕ поле (не хранится в Event)
-    private Long views;
+    private Double rating;
 }

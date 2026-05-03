@@ -65,7 +65,7 @@ public class EventAuthorizedServiceImpl implements EventAuthorizedService {
                             initiator,
                             dto.paid(),
                             dto.eventDate(),
-                            dto.views(),
+                            dto.rating(),
                             dto.confirmedRequests()
                     );
                 })

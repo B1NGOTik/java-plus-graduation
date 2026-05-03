@@ -4,9 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 import ru.yandex.practicum.event.events.*;
 import ru.yandex.practicum.event.events.params.AdminEventSearchParams;
 import ru.yandex.practicum.event.events.params.PublicEventSearchParams;
@@ -18,6 +17,7 @@ import ru.yandex.practicum.service.events.EventPublicService;
 import ru.yandex.practicum.service.events.EventsAdminService;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @RestController
@@ -68,8 +68,8 @@ public class EventController implements EventOperations {
     }
 
     @Override
-    public EventFullDto getByIdPublic(Long id, HttpServletRequest request) {
-        return publicService.getById(id, request);
+    public EventFullDto getByIdPublic(Long id, HttpServletRequest request, Long userId) {
+        return publicService.getById(id, request, userId);
     }
 
     @Override
@@ -82,5 +82,21 @@ public class EventController implements EventOperations {
                                          HttpServletRequest request) {
         log.info("Зашли в метод контроллера для получения событий с параметрами");
         return publicService.getEvents(params, request);
+    }
+
+    @PutMapping("/{eventId}/like")
+    public void likeEvent(
+            @PathVariable Long eventId,
+            @RequestHeader("X-EWM-USER-ID") Long userId) {
+
+        publicService.likeEvent(userId, eventId);
+    }
+
+    @GetMapping("/recommendations")
+    public Stream<RecommendedEventProto> getRecommendations(
+            @RequestHeader("X-EWM-USER-ID") Long userId,
+            @RequestParam(defaultValue = "10") int maxResults) {
+
+        return publicService.getRecommendations(userId, maxResults);
     }
 }

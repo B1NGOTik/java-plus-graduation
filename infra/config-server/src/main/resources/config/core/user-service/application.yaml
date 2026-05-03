@@ -30,6 +30,10 @@ spring:
 server:
   port: 0
 
+grpc:
+  server:
+    port: 0
+
 logging:
   level:
     root: INFO

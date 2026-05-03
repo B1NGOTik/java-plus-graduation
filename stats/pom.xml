@@ -13,9 +13,12 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>stats-dto</module>
-        <module>stats-server</module>
         <module>stats-client</module>
+        <module>serialization</module>
+        <module>common</module>
+        <module>collector</module>
+        <module>aggregator</module>
+        <module>analyzer</module>
     </modules>
 
     <properties>
@@ -23,5 +26,14 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.42</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
 </project>
